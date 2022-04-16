@@ -1,17 +1,35 @@
 name: Docker Image CI
 
 on: workflow_dispatch
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 jobs:
-  build:
+  build-and-push-image:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    
     - name: Build the Docker image
-      run: |
-        docker build . --file Dockerfile --tag dairs-bot:$(date +%s)
-        git config --global user.name 'DerBaum941'
-        git config --global user.email 'DerBaum941@users.noreply.github.com'
-        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
-        git add .
-        git commit -m 'Docker Build'
-        git push origin docker-builds
+      run: docker build . --file Dockerfile --tag dairs-bot:$(date +%s)
+    
+    - name: Login
+      uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+      with: 
+        registry: ${{ env.REGISTRY }}
+        username: DerBaum941
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        
+    - name: Build and push Docker image
+      uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
