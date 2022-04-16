@@ -1,0 +1,154 @@
+/*
+Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
+
+    http://aws.amazon.com/apache2.0/
+
+or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
+*/
+// Define our dependencies
+var express        = require('express');
+var session        = require('express-session');
+var passport       = require('passport');
+var OAuth2Strategy = require('passport-oauth').OAuth2Strategy;
+var request        = require('request');
+var handlebars     = require('handlebars');
+var { randomBytes }= require('crypto');
+var path           = require('path');
+var fs             = require('fs');
+var c              = require('../common/logman.js');
+var instances;
+
+
+/*  This link to generate a Token
+*   http://localhost:3000/auth/twitch?scope=channel:moderate+chat:edit+chat:read
+*/
+
+
+// Define our constants, you will change these with your own
+var TWITCH_CLIENT_ID;
+var TWITCH_SECRET;
+const SESSION_SECRET   =  randomBytes(64).toString('hex');
+const CALLBACK_URL     = 'http://localhost:3000/auth/twitch/callback';  // You can run locally with - http://localhost:3000/auth/twitch/callback
+const DEFAULT_SCOPE    = 'chat:read+chat:edit';  // '?scope=channel:moderate+chat:edit+chat:read'
+const MAX_SCOPE        = 'chat:read+chat:edit+bits:read+moderation:read+channel:manage:polls+channel:manage:predictions+channel:manage:redemptions+channel:read:hype_train'+
+                         '+channel:read:polls+channel:read:predictions+channel:read:redemptions'
+
+{
+    const authpath = path.normalize(__dirname+'./../../conf/credentials.json');
+    const auth = JSON.parse(fs.readFileSync(authpath, 'utf8')).twitch;
+    TWITCH_CLIENT_ID = auth.clientID;
+    TWITCH_SECRET = auth.clientSecret;
+}
+
+// Initialize Express and middlewares
+var app = express();
+
+function init(callbackero) {
+    instances = callbackero;
+    return new Promise(res=>setTimeout(res,500));
+}
+
+app.use(session({secret: SESSION_SECRET, resave: false, saveUninitialized: false}));
+app.use(express.static('public'));
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+// Override passport profile function to get user profile from Twitch API
+OAuth2Strategy.prototype.userProfile = function(accessToken, done) {
+  var options = {
+    url: 'https://api.twitch.tv/helix/users',
+    method: 'GET',
+    headers: {
+      'Client-ID': TWITCH_CLIENT_ID,
+      'Accept': 'application/vnd.twitchtv.v5+json',
+      'Authorization': 'Bearer ' + accessToken
+    }
+  };
+
+  request(options, function (error, response, body) {
+    if (response && response.statusCode == 200) {
+      done(null, JSON.parse(body));
+    } else {
+      done(JSON.parse(body));
+    }
+  });
+}
+
+passport.serializeUser(function(user, done) {
+    done(null, user);
+});
+
+passport.deserializeUser(function(user, done) {
+    done(null, user);
+});
+
+passport.use('twitch', new OAuth2Strategy({
+    authorizationURL: 'https://id.twitch.tv/oauth2/authorize?scope='+DEFAULT_SCOPE,
+    tokenURL: 'https://id.twitch.tv/oauth2/token?scope='+DEFAULT_SCOPE,
+    clientID: TWITCH_CLIENT_ID,
+    clientSecret: TWITCH_SECRET,
+    callbackURL: CALLBACK_URL,
+    state: true
+  },
+  function(accessToken, refreshToken, profile, done) {
+    profile.accessToken = accessToken;
+    profile.refreshToken = refreshToken;
+    profile.data[0].accessToken = accessToken;
+    profile.data[0].refreshToken = refreshToken;
+
+    done(null, profile);
+  }
+));
+
+// Set route to start OAuth link, this is where you define scopes to request
+app.get('/auth/twitch', passport.authenticate('twitch' /*, { scope: DEFAULT_SCOPE }*/));
+
+// Set route for OAuth redirect
+app.get('/auth/twitch/callback', passport.authenticate('twitch', { successRedirect: '/auth/twitch/success', failureRedirect: '/' }));
+
+// Define a simple template to safely generate HTML with values from user's profile
+var template = handlebars.compile(`
+<html><head><title>Twitch Auth</title></head>
+<table>
+    <tr><th>Access Token</th><td>{{accessToken}}</td></tr>
+    <tr><th>Refresh Token</th><td>{{refreshToken}}</td></tr>
+    <tr><th>Display Name</th><td>{{display_name}}</td></tr>
+    <tr><th>Bio</th><td>{{description}}</td></tr>
+    <tr><th>Image</th><td><br><img src="{{profile_image_url}}"></td></tr>
+</table></html>`);
+
+// If user has an authenticated session, display it, otherwise display link to authenticate
+app.get('/auth/twitch/success', function (req, res) {
+  if(req.session && req.session.passport && req.session.passport.user) {
+    const data = req.session.passport.user.data[0];
+    
+    instances.DB.upsert("twitch_auth_tokens", {
+        "userID": data.id,
+        "accessToken": data.accessToken,
+        "refreshToken": data.refreshToken,
+        "expiresIn": 0,
+        "obtainmentTimestamp": 0,
+        "scope": null
+    });
+    instances.Emitter.emit('NewTwitchAuth',data);
+    res.send(template(data));
+  } else {
+    res.redirect('/');
+  }
+});
+
+app.get('/', function (req, res) {
+  res.send(`<html><head><title>Twitch Auth</title></head><a href="/auth/twitch">
+  <b>Click to give away all your data</b><br>
+  <img src="https://cdn.betterttv.net/emote/58ae8407ff7b7276f8e594f2/3x"></a></html>`);
+});
+
+app.listen(3000, function () {
+  c.inf('Twitch auth @ 3000!');
+});
+
+exports.init = init;
