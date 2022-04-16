@@ -11,6 +11,7 @@ jobs:
         docker build . --file Dockerfile --tag dairs-bot:$(date +%s)
         git config --global user.name 'DerBaum941'
         git config --global user.email 'DerBaum941@users.noreply.github.com'
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
         git add .
         git commit -m 'Docker Build'
         git push origin docker-builds
