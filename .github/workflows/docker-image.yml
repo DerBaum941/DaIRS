@@ -25,7 +25,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v3
       with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-v${{github.run_number
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-v${{github.run_number}}
         
     - name: Build and push Docker image
       uses: docker/build-push-action@v2
