@@ -12,7 +12,7 @@ jobs:
     
     - name: Get number of commits
       id: count
-      run: echo "::set-output count=count::$(git rev-list --count HEAD main)"
+      run: echo "::set-output name=count::$(git rev-list --count HEAD main)"
     
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag dairs-bot:$(date +%s)
