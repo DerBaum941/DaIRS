@@ -15,7 +15,8 @@ jobs:
       run: echo "::set-output name=count::$(git rev-list --count HEAD main)"
     
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag dairs-bot:$(date +%s)
+      id: build
+      run: docker build . --file Dockerfile --tag dairs-bot:$(date +%s) && echo "::set-output name=count::$(git rev-list --count HEAD main)"
     
     - name: Login
       uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
@@ -35,5 +36,5 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ steps.count.outputs.count }}
+        tags: ${{ steps.build.outputs.count }}
         labels: ${{ steps.meta.outputs.labels }}
