@@ -16,14 +16,18 @@ function init(conf, callbacks) {
         delete auth, authpath;
     }
 
-    bot.once('ready', () => {
-        c.inf(`Logged into Discord API as ${bot.user.tag}`)
-        bot.user.setStatus(conf.Status);
-        c.inf('Discord API initialized');
-    });
     return new Promise(res => setTimeout(()=>{res(1)},5000));
 }
 
+
+bot.once('ready', () => {
+    bot.user.setStatus(conf.Status);
+    c.inf(`Logged into Discord API as ${bot.user.tag}`);
+});
+
+bot.on('error', error => {
+    c.err(error);
+});
 
 bot.on('message', async msg => {
 
