@@ -10,6 +10,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
+    - name: Get number of commits
+      id: date
+      run: echo "COMMITS=$(git rev-list --count HEAD main)" >> $GITHUB_ENV
+    
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag dairs-bot:$(date +%s)
     
@@ -31,5 +35,5 @@ jobs:
       with:
         context: .
         push: true
-        tags: $(date +%s)
+        tags: ${{ env.COMMITS }}
         labels: ${{ steps.meta.outputs.labels }}
