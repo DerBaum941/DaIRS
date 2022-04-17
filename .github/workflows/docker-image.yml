@@ -21,20 +21,11 @@ jobs:
         username: DerBaum941
         password: ${{ secrets.GITHUB_TOKEN }}
         
-    - name: Build and push versioned Docker image
+    - name: Build and push Docker image
       uses: docker/build-push-action@v2
       if: github.repository == 'DerBaum941/DaIRS'
       with:
         context: .
         push: true
-        tags: ghcr.io/derbaum941/dairs:v${{github.run_number}}
-        labels: ${{ steps.meta.outputs.labels }}
-    
-    - name: Build and push latest Docker image
-      uses: docker/build-push-action@v2
-      if: github.repository == 'DerBaum941/DaIRS'
-      with:
-        context: .
-        push: true
-        tags: ghcr.io/derbaum941/dairs:latest
+        tags: ghcr.io/derbaum941/dairs:v${{github.run_number}}, ghcr.io/derbaum941/dairs:latest
         labels: ${{ steps.meta.outputs.labels }}
