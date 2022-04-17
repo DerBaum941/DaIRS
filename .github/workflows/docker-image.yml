@@ -20,17 +20,21 @@ jobs:
         registry: ${{ env.REGISTRY }}
         username: DerBaum941
         password: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Extract metadata (tags, labels) for Docker
-      id: meta
-      uses: docker/metadata-action@v3
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         
-    - name: Build and push Docker image
+    - name: Build and push versioned Docker image
       uses: docker/build-push-action@v2
+      if: github.repository == 'DerBaum941/DaIRS'
       with:
         context: .
         push: true
         tags: ghcr.io/derbaum941/dairs:v${{github.run_number}}
+        labels: ${{ steps.meta.outputs.labels }}
+    
+    - name: Build and push latest Docker image
+      uses: docker/build-push-action@v2
+      if: github.repository == 'DerBaum941/DaIRS'
+      with:
+        context: .
+        push: true
+        tags: ghcr.io/derbaum941/dairs:latest
         labels: ${{ steps.meta.outputs.labels }}
