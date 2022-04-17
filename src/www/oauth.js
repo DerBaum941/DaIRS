@@ -9,11 +9,11 @@ or in the "license" file accompanying this file. This file is distributed on an 
 
 */
 // Define our dependencies
-var express        = require('express');
+const express      = require('express');
+const passport     = require('passport');
 var session        = require('express-session');
-var passport       = require('passport');
 var OAuth2Strategy = require('passport-oauth').OAuth2Strategy;
-var request        = require('request');
+  const https        = require('https');
 var handlebars     = require('handlebars');
 var { randomBytes }= require('crypto');
 var path           = require('path');
@@ -32,7 +32,7 @@ var TWITCH_CLIENT_ID;
 var TWITCH_SECRET;
 const SESSION_SECRET   =  randomBytes(64).toString('hex');
 const CALLBACK_URL     = 'http://localhost:3000/auth/twitch/callback';  // You can run locally with - http://localhost:3000/auth/twitch/callback
-const DEFAULT_SCOPE    = 'chat:read+chat:edit';  // '?scope=channel:moderate+chat:edit+chat:read'
+const DEFAULT_SCOPE    = 'chat:read+chat:edit+whispers:read+whispers:edit';  // '?scope=channel:moderate+chat:edit+chat:read'
 const MAX_SCOPE        = 'chat:read+chat:edit+bits:read+moderation:read+channel:manage:polls+channel:manage:predictions+channel:manage:redemptions+channel:read:hype_train'+
                          '+channel:read:polls+channel:read:predictions+channel:read:redemptions'
 
@@ -46,9 +46,9 @@ const MAX_SCOPE        = 'chat:read+chat:edit+bits:read+moderation:read+channel:
 // Initialize Express and middlewares
 var app = express();
 
-function init(callbackero) {
+ init = (callbackero) => {
     instances = callbackero;
-    return new Promise(res=>setTimeout(res,500));
+    return new Promise(res => setTimeout(res,500));
 }
 
 app.use(session({secret: SESSION_SECRET, resave: false, saveUninitialized: false}));
@@ -58,7 +58,9 @@ app.use(passport.session());
 
 
 // Override passport profile function to get user profile from Twitch API
-OAuth2Strategy.prototype.userProfile = function(accessToken, done) {
+OAuth2Strategy.prototype.userProfile = (accessToken, done) => {
+
+  /*
   var options = {
     url: 'https://api.twitch.tv/helix/users',
     method: 'GET',
@@ -68,21 +70,37 @@ OAuth2Strategy.prototype.userProfile = function(accessToken, done) {
       'Authorization': 'Bearer ' + accessToken
     }
   };
-
-  request(options, function (error, response, body) {
+  Request(options, (error, response, body) => {
     if (response && response.statusCode == 200) {
       done(null, JSON.parse(body));
     } else {
       done(JSON.parse(body));
     }
+  }); */
+
+  const httpsOptions = {
+    hostname: 'api.twitch.tv',
+    path: '/helix/users',
+    port: 443,
+    headers: {
+      'Client-ID': TWITCH_CLIENT_ID,
+      'Accept': 'application/vnd.twitchtv.v5+json',
+      'Authorization': 'Bearer ' + accessToken
+    }
+  };
+  https.get(httpsOptions, res => {
+    if (res?.statusCode != 200) done(null, null);
+    res.on(('data'), (body) => {
+      done(null, JSON.parse(body));
+    });
   });
 }
 
-passport.serializeUser(function(user, done) {
+passport.serializeUser((user, done) => {
     done(null, user);
 });
 
-passport.deserializeUser(function(user, done) {
+passport.deserializeUser((user, done) => {
     done(null, user);
 });
 
@@ -94,7 +112,7 @@ passport.use('twitch', new OAuth2Strategy({
     callbackURL: CALLBACK_URL,
     state: true
   },
-  function(accessToken, refreshToken, profile, done) {
+  (accessToken, refreshToken, profile, done) => {
     profile.accessToken = accessToken;
     profile.refreshToken = refreshToken;
     profile.data[0].accessToken = accessToken;
@@ -122,7 +140,7 @@ var template = handlebars.compile(`
 </table></html>`);
 
 // If user has an authenticated session, display it, otherwise display link to authenticate
-app.get('/auth/twitch/success', function (req, res) {
+app.get('/auth/twitch/success', (req, res) => {
   if(req.session && req.session.passport && req.session.passport.user) {
     const data = req.session.passport.user.data[0];
     
@@ -141,13 +159,13 @@ app.get('/auth/twitch/success', function (req, res) {
   }
 });
 
-app.get('/', function (req, res) {
+app.get('/', (req, res) => {
   res.send(`<html><head><title>Twitch Auth</title></head><a href="/auth/twitch">
   <b>Click to give away all your data</b><br>
   <img src="https://cdn.betterttv.net/emote/58ae8407ff7b7276f8e594f2/3x"></a></html>`);
 });
 
-app.listen(3000, function () {
+app.listen(3000, () => {
   c.inf('Twitch auth @ 3000!');
 });
 

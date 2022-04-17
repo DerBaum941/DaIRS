@@ -15,7 +15,7 @@ async function init(conf, instance) {
     
     await oauthApp.init(instance);
 
-    return new Promise(res=>setTimeout(res,1000));
+    return new Promise(res => setTimeout(res,1000));
 }
 
 webApp.get('/', (req, res) => {

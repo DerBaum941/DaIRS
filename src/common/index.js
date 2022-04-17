@@ -26,8 +26,8 @@ async function init(conf) {
     instances.Discord = require('./../discord/index.js');
     await instances.Discord.init(conf.discord, instances);
     //Initialize Twitter
-    instances.Twitter = require('./../twitter/index.js');
-    instances.Twitter.init(conf.twitter, instances);
+    //instances.Twitter = require('./../twitter/index.js');
+    //await instances.Twitter.init(conf.twitter, instances);
 
     /*
      *  Additional Modules & Functionality

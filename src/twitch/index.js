@@ -5,6 +5,7 @@ const { RefreshingAuthProvider } = require('@twurple/auth');
 const { ClientCredentialsAuthProvider } = require('@twurple/auth');
 const { ChatClient } = require('@twurple/chat');
 const { ApiClient } = require('@twurple/api');
+const { BasicPubSubClient, PubSubClient } = require('@twurple/pubsub');
 
 var botID;
 var botPrefix;
@@ -13,7 +14,7 @@ var channels;
 var authorizedChannels = [];
 var apiAuthorizers = [];
 
-var chatClient, apiClient;
+var chatClient, apiClient, pubSubClient;
 
 let globalAuth;
 var clientId, clientSecret;
@@ -98,6 +99,10 @@ function initChatClient() {
 
     chatClient.onMessage(messageCallback);
 
+    chatClient.onWhisper(whisperCallback);
+
+    //chatClient.onAnyMessage(console.log);
+
     chatClient.connect();
 
     return new Promise( res=>setTimeout( ()=>res(1),1000 ) );
@@ -117,6 +122,10 @@ exports.isStreamLive = isStreamLive;
 async function registerCallback() {
     c.debug(`Connecting to channels ${authorizedChannels.toString()}`);
     c.inf("Connected to Twitch Chat as " + chatClient.currentNick);
+}
+
+async function whisperCallback(user, message, msgObj) {
+    c.debug(`[Whisper] ${user}: ${message}`);
 }
 
 async function messageCallback(channel, user, message, msgObj) {

@@ -1,11 +1,7 @@
 const c = require('../common/logman.js');
 const fs = require('fs');
-const Database = require('better-sqlite3/lib/database');
 
-const dbFile = "./src/db/sqlite.db";
-const db = require('better-sqlite3')(dbFile);
-
- 
+const db = require('better-sqlite3')('./src/db/sqlite.db');
 
 var instances;
 

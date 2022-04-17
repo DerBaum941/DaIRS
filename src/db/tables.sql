@@ -1,3 +1,5 @@
+PRAGMA foreign_keys = ON;
+
 CREATE TABLE IF NOT EXISTS twitch_auth_tokens (
     userID INTEGER PRIMARY KEY NOT NULL,
     accessToken TEXT NOT NULL,
@@ -5,17 +7,36 @@ CREATE TABLE IF NOT EXISTS twitch_auth_tokens (
     expiresIn INTEGER DEFAULT 0,
     obtainmentTimestamp INTEGER DEFAULT 0,
     scope TEXT
-);
+) WITHOUT ROWID;
 
 CREATE TABLE IF NOT EXISTS twitch_redeem_streak (
     userID INTEGER PRIMARY KEY NOT NULL,
     streakCount INTEGER NOT NULL DEFAULT 0,
     streakActive INTEGER NOT NULL DEFAULT 0
-);
+) WITHOUT ROWID;
 
-CREATE TABLE IF NOT EXISTS twitch_custom_commands (
+CREATE TABLE IF NOT EXISTS twitch_redeem_stats (
+    rewardID TEXT PRIMARY KEY NOT NULL,
+    redeemCount INTEGER NOT NULL DEFAULT 0,
+    totalPoints INTEGER NOT NULL DEFAULT 0
+) WITHOUT ROWID;
+
+CREATE TABLE IF NOT EXISTS chat_commands (
     commandID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    commandName TEXT NOT NULL,
-    content TEXT NOT NULL,
-    countUsed INTEGER NOT NULL
+    mutable INTEGER NOT NULL DEFAULT 1,
+    enabled INTEGER NOT NULL DEFAULT 1,
+    modOnly INTEGER NOT NULL DEFAULT 0,
+    commandName TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    domain TEXT NOT NULL,
+    content TEXT NOT NULL DEFAULT '',
+    countUsed INTEGER NOT NULL DEFAULT 0
 );
+CREATE UNIQUE INDEX IF NOT EXISTS commandIdx ON chat_commands(commandName);
+
+CREATE TABLE IF NOT EXISTS command_alias (
+    aliasID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    commandID INTEGER NOT NULL 
+        REFERENCES chat_commands(commandID) ON DELETE CASCADE,
+    aliasName TEXT NOT NULL UNIQUE COLLATE NOCASE
+);
+CREATE UNIQUE INDEX IF NOT EXISTS aliasIdx ON command_alias(aliasName);

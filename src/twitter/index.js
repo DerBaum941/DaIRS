@@ -11,11 +11,14 @@ delete auth, authpath;
 
 var instances;
 var monitoredAccountIds = [];
+var monitoredAccounts = [];
+
 
 async function init(conf, callbacks) {
     instances = callbacks;
 
-    await followAccounts(conf.accounts);
+    //await followAccounts(conf.accounts);
+    monitoredAccounts = conf.accounts;
 
     await createV2Stream();
 
@@ -60,11 +63,10 @@ async function createV2Stream() {
         });
     }
 
-    monitoredAccountIds.forEach(async (id)=> {
-        const name = await twitterClient.v2.user(id);
+    monitoredAccounts.forEach(async (name)=> {
         await twitterClient.v2.updateStreamRules({
-            add: [{ value: 'from:'+id, 
-                    tag: 'Monitored Account '+name.name }]
+            add: [{ value: 'from:'+name, 
+                    tag: 'Monitored Account '+name }]
           });
     });
 
