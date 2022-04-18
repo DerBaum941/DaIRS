@@ -23,13 +23,15 @@ CREATE TABLE IF NOT EXISTS twitch_redeem_stats (
 
 CREATE TABLE IF NOT EXISTS chat_commands (
     commandID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    mutable INTEGER NOT NULL DEFAULT 1,
+    commandName TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    countUsed INTEGER NOT NULL DEFAULT 0,
+    options TEXT NOT NULL DEFAULT '[]',
     enabled INTEGER NOT NULL DEFAULT 1,
     modOnly INTEGER NOT NULL DEFAULT 0,
-    commandName TEXT NOT NULL UNIQUE COLLATE NOCASE,
     domain TEXT NOT NULL,
-    content TEXT NOT NULL DEFAULT '',
-    countUsed INTEGER NOT NULL DEFAULT 0
+    content TEXT DEFAULT NULL,
+    description TEXT DEFAULT NULL,
+    builtFromFile INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX IF NOT EXISTS commandIdx ON chat_commands(commandName);
 
@@ -40,3 +42,4 @@ CREATE TABLE IF NOT EXISTS command_alias (
     aliasName TEXT NOT NULL UNIQUE COLLATE NOCASE
 );
 CREATE UNIQUE INDEX IF NOT EXISTS aliasIdx ON command_alias(aliasName);
+CREATE INDEX IF NOT EXISTS commIDx ON command_alias(commandID);
