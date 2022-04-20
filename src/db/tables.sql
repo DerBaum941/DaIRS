@@ -37,9 +37,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS commandIdx ON chat_commands(commandName);
 
 CREATE TABLE IF NOT EXISTS command_alias (
     aliasID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    commandID INTEGER NOT NULL 
-        REFERENCES chat_commands(commandID) ON DELETE CASCADE,
-    aliasName TEXT NOT NULL UNIQUE COLLATE NOCASE
+    commandID INTEGER NOT NULL ,
+    aliasName TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    FOREIGN KEY(commandID) REFERENCES chat_commands(commandID) ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX IF NOT EXISTS aliasIdx ON command_alias(aliasName);
 CREATE INDEX IF NOT EXISTS commIDx ON command_alias(commandID);

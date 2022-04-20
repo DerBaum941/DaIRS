@@ -29,26 +29,29 @@ exports.data = {
 
 /**
  * Function that gets executed when command is invoked
+ * @param {EventEmitter} Emitter The app's Event Emitter, add callbacks to other things if you want.
  * @param {Object} clients Contains all instanced clients {discord: bot, twitch: {chat,api,pub,event}}
  * @param {string} args String remainder of the original message, excluding commandName
  * @return {void}
  */
-exports.callback = async (clients, args) => {
+exports.callback = async (Emitter, clients, args) => {
 
 }
 
 /**
  * Discord slash command specific callback values
+ * @param {EventEmitter} Emitter The app's Event Emitter, add callbacks to other things if you want.
  * @param {Discord.Client} bot Discord Client
  * @param {Object} interaction Interaction of the Discord slash command
  * @return {void}
  */
-exports.discordCallback = async (bot, interaction) => {
+exports.discordCallback = async (Emitter, bot, interaction) => {
 
 }
 
 /**
  * Twitch IRC callback values
+ * @param {EventEmitter} Emitter The app's Event Emitter, add callbacks to other things if you want.
  * @param {Object} clients Contains Twitch API Clients {chat,api,pub,event}
  * @param {string} channel Name of the IRC channel
  * @param {string} user login_name of the Invoking user
@@ -56,6 +59,6 @@ exports.discordCallback = async (bot, interaction) => {
  * @param {*} msgObj Full IRC message object
  * @return {void}
  */
-exports.twitchCallback = async (clients, channel, user, args, msgObj) => {
+exports.twitchCallback = async (Emitter, clients, channel, user, args, msgObj) => {
 
 }

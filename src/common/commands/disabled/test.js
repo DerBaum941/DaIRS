@@ -7,18 +7,28 @@ const pathRe=/(\/commands\/)(\w*\/)*(\w+)+(\.js)/gi;
 const pathRe2 = /(\/commands\/)(\w*\/)*([\w-]+\.js)/gi;
 const out = minimal.split(pathRe2).slice(1,-1).filter( Boolean );
 const fixed = path.join(__dirname,...out);
-console.log(fixed);
+//console.log(fixed);
 
-var cmdModule = require('./example.js');
-console.log(cmdModule.callback)
-if (!cmdModule.callback) console.log("test");
+//var cmdModule = require('./example.js');
+//console.log(cmdModule.callback)
+//if (!cmdModule.callback) console.log("test");
 
 const test = undefined;
-if (!test || test?.exports == {}) console.log('yes');
+//if (!test || test?.exports == {}) console.log('yes');
 
 const a = ['a','b'];
 const trueth = a.every(i=> typeof i === "string" );
-console.log(JSON.stringify(a));
+//console.log(JSON.stringify(a));
 
 const b = new Set([1,2,2]);
-b.forEach(f=>console.log(f))
+//b.forEach(f=>console.log(f))
+
+const domainString = `{"twitch":true,"discord":false}`;
+const logthis = JSON.parse(domainString);
+//console.log(logthis.discord === false);
+
+const a2 = '\\comm\\b\\af.js'
+const res = a2.split(path.sep);
+//console.log(res)
+
+console.log(path.resolve('a','./b'))

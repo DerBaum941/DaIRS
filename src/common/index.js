@@ -32,6 +32,7 @@ async function init(conf) {
     /*
      *  Additional Modules & Functionality
      */
+    instances.Commands = require('./commandHandler.js')(instances);
     
    c.inf("Completed initialization of "+conf.project_name);
 }
