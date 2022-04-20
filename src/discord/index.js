@@ -47,8 +47,13 @@ function init(conf, callbacks) {
     }
 
     bot.on('interactionCreate', async interaction => {
+        instances.Emitter.emit('DiscordInteraction', instances.Emitter, bot, interaction);
+
         if (!interaction.isCommand()) return;
 
+        instances.Emitter.emit('DiscordCommand', instances.Emitter, bot, interaction);
+        
+        /*
         const command = bot.commands.get(interaction.commandName);
 
         if (!command) return;
@@ -59,6 +64,11 @@ function init(conf, callbacks) {
             console.error(error);
             await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
         }
+        */
+    });
+
+    bot.on('message', async msg => {
+        instances.Emitter.emit('DiscordMessage', instances.Emitter, bot, msg);
     });
 
     return new Promise(res => setTimeout(()=>{res(1)},1000));
@@ -69,9 +79,7 @@ bot.on('error', error => {
     c.err(error);
 });
 
-bot.on('message', async msg => {
 
-});
 
 bot.on('messageReactionAdd', async (reaction, user) => {
 

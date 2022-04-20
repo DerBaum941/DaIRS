@@ -28,7 +28,7 @@ class CommandHandler {
      *              Public functions
      *  =======================================
      */
-    constructor(modules) {
+    constructor() {
         const start = hrtime.bigint();
         //Load command files
         this.#parseFiles();
@@ -41,17 +41,11 @@ class CommandHandler {
         const commandCount = Object.keys(this.#commands).length;
         const aliasCount = Object.keys(this.#commandAliases).length;
         c.inf(`Loaded ${commandCount} commands(${aliasCount-commandCount} Aliases) in ${elapsed}ms.`);
-        modules.Emitter.on('TwitchMessage',this.#twitchMessageHandle);
-        modules.Emitter.on('TwitchWhisper',this.#twitchWhisperHandle);
-        //modules.Emitter.on('DiscordMessage',this.#discordMessageHandle);  //Not implemented. Use Commands instead.
-        modules.Emitter.on('DiscordCommand',this.#discordCommandHandle);
     }
-    static get() {
-        if (this.#instance === undefined)
-            this.#instance = new CommandHandler();
-        return this.#instance;
-    }
+
     static get(...args) {
+        if(args[0].Emitter) this.#registerEvents(args[0].Emitter);
+
         if (this.#instance === undefined)
             this.#instance = new CommandHandler(...args);
         return this.#instance;
@@ -92,6 +86,10 @@ class CommandHandler {
         //Find command, set disabled, delete aliases + name
     }
 
+    registerCommandsToDiscord(DiscordClient) {
+
+    }
+
     /*  =======================================
      *          Callback functions
      *  =======================================
@@ -103,9 +101,9 @@ class CommandHandler {
         //Reply with content
     }
     #twitchWhisperHandle(Emitter, Clients, ...stuff) {
-
+        //Handle commands too cause why not
     }
-    #discordCommandHandle(Emitter, Bot, ...stuff) {
+    #discordCommandHandle(Emitter, Bot, interaction) {
         //Make a function to parse out arguments
         //Call dispatch
         //Call the specific handle
@@ -138,6 +136,13 @@ class CommandHandler {
      *        Implementation functions
      *  =======================================
      */
+
+    #registerEvents(EventEmitter) {
+        EventEmitter.on('TwitchMessage',this.#twitchMessageHandle);
+        EventEmitter.on('TwitchWhisper',this.#twitchWhisperHandle);
+        //EventEmitter.on('DiscordMessage',this.#discordMessageHandle);  //Not implemented. Use Commands instead.
+        EventEmitter.on('DiscordCommand',this.#discordCommandHandle);
+    }
 
     #parseFiles() {
         //Read in Files in command paths and push valid ones onto the Array
