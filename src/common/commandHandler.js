@@ -5,6 +5,10 @@ const fs = require('fs');
 const path = require('path');
 const { hrtime } = require('process');
 
+//Todo
+//Split data.options into Valid Discord Options and Choices for Twitch...
+//Add Commands Scope to bot invite
+
 /*  =======================================
  *                  Constants
  *  =======================================
@@ -28,7 +32,7 @@ class CommandHandler {
      *              Public functions
      *  =======================================
      */
-    constructor() {
+    constructor(modules) {
         const start = hrtime.bigint();
         //Load command files
         this.#parseFiles();
@@ -36,16 +40,21 @@ class CommandHandler {
         //Load database commands
         this.#parseDatabase();
 
+        try {
+            this.#registerEvents(modules.Emitter);
+            this.#registerCommandsToDiscord(modules.Discord.bot);
+        } catch {
+            throw 'You must first load this module with valid initalizers';
+        }
         //Say something impressive
         const elapsed = (hrtime.bigint() - start) / 1000000n; //ms time
         const commandCount = Object.keys(this.#commands).length;
         const aliasCount = Object.keys(this.#commandAliases).length;
         c.inf(`Loaded ${commandCount} commands(${aliasCount-commandCount} Aliases) in ${elapsed}ms.`);
+
     }
 
     static get(...args) {
-        if(args[0].Emitter) this.#registerEvents(args[0].Emitter);
-
         if (this.#instance === undefined)
             this.#instance = new CommandHandler(...args);
         return this.#instance;
@@ -77,16 +86,20 @@ class CommandHandler {
      * @returns {boolean} True if successfully deleted something
      */
     delCustomCommand(commandName) {
-    
+        const cmd = this.#getCommandByName(commandName);
+        //Delete from DB? Or keep stats somewhere else?
+        //Remove Aliases
+        //Delete from Cache
+        
     }
     enCustomCommand() {
         //Find command, set enabled, load aliases + name
+        //Unregister from Discord
+
     }
     disCustomCommand() {
         //Find command, set disabled, delete aliases + name
-    }
-
-    registerCommandsToDiscord(DiscordClient) {
+        //Register to Discord
 
     }
 
@@ -94,20 +107,22 @@ class CommandHandler {
      *          Callback functions
      *  =======================================
      */
-    #twitchMessageHandle(Emitter, Clients, ...stuff) {
+    #twitchMessageHandle(Emitter, Clients, channel, user, message, messageObject) {
         //Make a function to parse out arguments
         //Call dispatch
         //Call the specific handle
-        //Reply with content
+        //Reply with content | Could whisper @ the User?
+
     }
     #twitchWhisperHandle(Emitter, Clients, ...stuff) {
         //Handle commands too cause why not
     }
     #discordCommandHandle(Emitter, Bot, interaction) {
-        //Make a function to parse out arguments
         //Call dispatch
         //Call the specific handle
-        //Reply with content
+        //Reply with content | Probably send to channel by hand?
+
+        //Find out if replying removes the interaction
     }
     
 
@@ -137,6 +152,41 @@ class CommandHandler {
      *  =======================================
      */
 
+    /**
+     * Adds a single command to Discord API
+     * @param {Command} cmd Command to add to registry
+     */
+    #registerDiscordCommand;
+    #registerDiscordCommandLogic(cmd, DiscordClient) {
+
+    }
+    /**
+     * Deletes a single command from the Discord API
+     * @param {Command} cmd Command to delete from registry
+     */
+    #deleteDiscordCommand;
+    #deleteDiscordCommandLogic(cmd, DiscordClient) {
+
+    }
+    #registerCommandsToDiscord(DiscordClient) {
+        this.#registerDiscordCommand =  function (cmd) {
+            this.#registerDiscordCommandLogic(cmd,DiscordClient);
+        }
+        this.#deleteDiscordCommand =  function (cmd) {
+            this.#deleteDiscordCommandLogic(cmd,DiscordClient);
+        }
+        const api = DiscordClient.application.commands;
+        this.#commands.forEach(async cmd => {
+            cmd = cmd.data;
+            await api.create({
+                name: cmd.commandName,
+                description:cmd.description,
+                type: "CHAT_INPUT",
+                //options: cmd.options,
+                defaultPermission: cmd.enabled && cmd.discordEnabled
+            },'<GUILD_ID_HERE>');
+        });
+    }
     #registerEvents(EventEmitter) {
         EventEmitter.on('TwitchMessage',this.#twitchMessageHandle);
         EventEmitter.on('TwitchWhisper',this.#twitchWhisperHandle);

@@ -142,7 +142,7 @@ async function messageCallback(channel, user, message, msgObj) {
         chatClient.say(channel, "The mods are " + mdos );
     }
 
-    c.debug(`[Twitch] ${user}: ${message}`);
+    c.debug(`[Twitch] [${channel}] ${user}: ${message}`);
 }
 
 function AuthRefreshCallback(data,userID) {

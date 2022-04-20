@@ -4,26 +4,23 @@ const fs = require('fs')
 const c = require('./../common/logman.js')
 const { Routes } = require('discord-api-types/v9');
 const { REST } = require('@discordjs/rest');
-const https = require('https');
 const commands = [];
 const commandFiles = fs.readdirSync(__dirname + '/commands').filter(file => file.endsWith('.js'));
 
 var instances;
 
 const bot = new Discord.Client({intents: [Discord.Intents.FLAGS.GUILDS]});
-bot.commands = new Discord.Collection();
 
-function deployCommands (clientId, guildId, token) {
-    for (const file of commandFiles) {
-	    const command = require(`./commands/${file}`);
-	    commands.push(command.data.toJSON());
-    }
 
-    const rest = new REST({ version: '9' }).setToken(token);
+function deployCommands (guildId) {
 
-    rest.put(Routes.applicationCommands(clientId), { body: commands })
-	    .then(() => c.inf('Successfully registered Discord commands'))
-	    .catch(console.error);
+    //LITERALLY a one-liner
+    //idk what the frick you were lookin at
+    commands.forEach(cmd => bot.application.commands.create({cmd},guildId));
+
+    //bot.rest.put(Routes.applicationCommands(clientId), { body: commands })
+	//    .then(() => c.inf('Successfully registered Discord commands'))
+	//    .catch(console.error);
 }
 
 function init(conf, callbacks) {
@@ -31,8 +28,12 @@ function init(conf, callbacks) {
     {
         const authpath = path.normalize(__dirname+'./../../conf/credentials.json');
         const auth = JSON.parse(fs.readFileSync(authpath, 'utf8')).discord;
-        deployCommands(conf.clientId, conf.guildId, auth.token)
+        //deployCommands(conf.clientId, conf.guildId, auth.token)
         bot.login(auth.token);
+
+        //This would've been much smarter
+        //bot.rest = new REST({ version: '9' }).setToken(token);
+
         delete auth, authpath;
     }
 
@@ -40,11 +41,6 @@ function init(conf, callbacks) {
         bot.user.setStatus(conf.Status);
         c.inf(`Logged into Discord API as ${bot.user.tag}`);
     });
-    
-    for (const file of commandFiles) {
-	    const command = require(`./commands/${file}`);
-	    bot.commands.set(command.data.name, command);
-    }
 
     bot.on('interactionCreate', async interaction => {
         instances.Emitter.emit('DiscordInteraction', instances.Emitter, bot, interaction);
@@ -52,7 +48,7 @@ function init(conf, callbacks) {
         if (!interaction.isCommand()) return;
 
         instances.Emitter.emit('DiscordCommand', instances.Emitter, bot, interaction);
-        
+
         /*
         const command = bot.commands.get(interaction.commandName);
 
@@ -86,7 +82,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 });
 
 exports.init = init;
-
+exports.bot = bot;
 
 /*
 //FUCK ME

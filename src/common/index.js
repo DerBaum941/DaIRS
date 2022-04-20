@@ -37,8 +37,6 @@ async function init(conf) {
    c.inf("Completed initialization of "+conf.project_name);
 }
 
-//init({db: "", www: "", twitch: "", discord: "", twitter: ""}, "");
-
 exports.Init = init;
 exports.Emitter = ev;
 exports.Instances = instances;
