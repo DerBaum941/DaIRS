@@ -44,10 +44,9 @@ function init(conf, callbacks) {
 
     bot.on('interactionCreate', async interaction => {
         instances.Emitter.emit('DiscordInteraction', instances.Emitter, bot, interaction);
-
-        if (!interaction.isCommand()) return;
-
-        instances.Emitter.emit('DiscordCommand', instances.Emitter, bot, interaction);
+        
+        if (interaction.isCommand())
+            instances.Emitter.emit('DiscordCommand', instances.Emitter, bot, interaction);
 
         /*
         const command = bot.commands.get(interaction.commandName);

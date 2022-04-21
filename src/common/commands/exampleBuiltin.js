@@ -18,7 +18,13 @@ exports.data = {
     aliases: ['exB','testB'],            //Aliases the command is available as
 
     //Default: None
-    options: ['option1','option2'],    //Only provided options are accepted as the second argument
+    twitchChoices: ['option1','option2'], //Only provided choices are accepted as the second argument
+
+    //Default: None
+    discordOptions: [],                //Must resolve to Discord Options: https://discord.js.org/#/docs/discord.js/stable/typedef/ApplicationCommandOptionData
+
+    //Default false
+    replyInDMs: false,                 //Replies in the command's channel if false | Sends a DM / Whisper otherwise
 
     reply: 'Example command success!', //Message to always reply with when Command is called
 
@@ -28,7 +34,7 @@ exports.data = {
 
 
 /**
- * Function that gets executed when command is invoked
+ * Function that gets executed FIRST when command is invoked
  * @param {EventEmitter} Emitter The app's Event Emitter, add callbacks to other things if you want.
  * @param {Object} clients Contains all instanced clients {discord: bot, twitch: {chat,api,pub,event}}
  * @param {string} args String remainder of the original message, excluding commandName
@@ -55,10 +61,11 @@ exports.discordCallback = async (Emitter, bot, interaction) => {
  * @param {Object} clients Contains Twitch API Clients {chat,api,pub,event}
  * @param {string} channel Name of the IRC channel
  * @param {string} user login_name of the Invoking user
- * @param {*} args String remainder of the original message, excluding commandName
+ * @param {string?} choice The selected choice, if one was defined
+ * @param {*} args String remainder of the original message, excluding commandName and choice
  * @param {*} msgObj Full IRC message object
  * @return {void}
  */
-exports.twitchCallback = async (Emitter, clients, channel, user, args, msgObj) => {
+exports.twitchCallback = async (Emitter, clients, channel, user, choice, args, msgObj) => {
 
 }

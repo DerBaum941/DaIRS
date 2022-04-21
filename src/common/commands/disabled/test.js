@@ -31,4 +31,8 @@ const a2 = '\\comm\\b\\af.js'
 const res = a2.split(path.sep);
 //console.log(res)
 
-console.log(path.resolve('a','./b'))
+//console.log(path.resolve('a','./b'))
+
+const commandRe = /(?<prefix>^.)(?<cmd>\w+)? *(?<args>.+)*/g;
+const str = "!cmd add yello You stink!";
+console.log(commandRe.exec(str).groups.args);

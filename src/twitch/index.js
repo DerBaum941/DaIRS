@@ -49,7 +49,19 @@ async function init(conf,callbacks) {
 
     await initChatClient();
 
+    //TODO:
+    //ADD PubSub & EventSub Clients
+    const clients = {chat: chatClient, api: apiClient};
+
     instances.Emitter.on('NewTwitchAuth', newAuthCallback);
+
+    //Relay Events :)
+    chatClient.onMessage(async (channel, user, message, msg) => {
+        instances.Emitter.emit('TwitchMessage', instances.Emitter, clients, channel, user, message, msg);
+    });
+    chatClient.onWhisper(async (user, message, msg)=>{
+        instances.Emitter.emit('TwitchWhisper', instances.Emitter, clients, user, message, msg);
+    });
 
     return new Promise(res=>setTimeout(res,100));
 }
@@ -100,8 +112,6 @@ function initChatClient() {
     chatClient.onMessage(messageCallback);
 
     chatClient.onWhisper(whisperCallback);
-
-    //chatClient.onAnyMessage(console.log);
 
     chatClient.connect();
 

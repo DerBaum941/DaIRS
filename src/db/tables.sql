@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS chat_commands (
     modOnly INTEGER NOT NULL DEFAULT 0,
     domain TEXT NOT NULL,
     content TEXT DEFAULT NULL,
+    replyDM INTEGER NOT NULL DEFAULT 0,
     description TEXT DEFAULT NULL,
     builtFromFile INTEGER NOT NULL DEFAULT 0
 );

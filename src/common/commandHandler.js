@@ -4,6 +4,7 @@ const cnf = require('../../conf/general.json');
 const fs = require('fs');
 const path = require('path');
 const { hrtime } = require('process');
+const { Console } = require('console');
 
 //Todo
 //Split data.options into Valid Discord Options and Choices for Twitch...
@@ -66,13 +67,13 @@ class CommandHandler {
      * @param {string} reply Text to reply with on Invoke
      * @param {Object} commandOptions 
      */
-    addCustomCommand(commandName, reply, { modOnly, enabled, twitchEnabled, discordEnabled, description, aliases, options }) {
+    addCustomCommand(commandName, reply, { replyInDMs, modOnly, enabled, twitchEnabled, discordEnabled, description, aliases, twitchChoices, discordOptions }) {
         //Simple check for Duplicate
         if (findCommandByName(commandName)) {
             return null;
         }
         //Create basic command object
-        const cmd = this.#validateCommand(commandName, reply, modOnly, enabled, twitchEnabled, discordEnabled, description, aliases, options);
+        const cmd = this.#validateCommand(commandName, reply, replyInDMs, modOnly, enabled, twitchEnabled, discordEnabled, description, aliases, twitchChoices, discordOptions);
         //Throw it in the DB
         //Cache it
         const result = this.#registerCommand(cmd, false);
@@ -107,21 +108,115 @@ class CommandHandler {
      *          Callback functions
      *  =======================================
      */
+    //Precompile the statement for SPEEEEEED
+    #incrementUse = db.prepare("UPDATE chat_commands SET countUsed = countUsed + 1 WHERE commandID = ?");
     #twitchMessageHandle(Emitter, Clients, channel, user, message, messageObject) {
-        //Make a function to parse out arguments
         //Call dispatch
         //Call the specific handle
         //Reply with content | Could whisper @ the User?
 
-    }
-    #twitchWhisperHandle(Emitter, Clients, ...stuff) {
-        //Handle commands too cause why not
-    }
-    #discordCommandHandle(Emitter, Bot, interaction) {
-        //Call dispatch
-        //Call the specific handle
-        //Reply with content | Probably send to channel by hand?
+        //Parse message
+        const commandRe = /(?<prefix>^.)(?<cmd>\w+)? *(?<args>.+)*/g;
+        var groups = commandRe.exec(message)?.groups;
 
+        //Has the correct prefix
+        if (!groups || groups.prefix != cnf.twitch.commandPrefix) return;
+
+        //Command exists
+        const commandID = this.#commandAliases[groups.cmd];
+        if (!commandID) return;
+
+        const cmd = this.#commands[commandID];
+
+        //Check if choices have been met
+        const pass = cmd.data.twitchChoices.some(choice => groups.args.startsWith(choice));
+        if (!pass) {
+            //todo: reply incorrect usage
+            //switch by reply flag
+            var choicesStr = "["
+            cmd.data.twitchChoices.forEach(ch => choicesStr+=ch+'|');
+            choicesStr.replace(/.$/,']');
+            const errorReply = `Incorrect usage! Try:${groups.prefix}${groups.cmd} ${choicesStr}`;
+            if (cmd.data.replyInDMs || channel == null) {
+                Clients.chat.whisper(user, errorReply);
+            } else {
+                Clients.chat.say(channel, errorReply, messageObject);
+            }
+        }
+
+        //If choices were defined, extract it
+        if (cmd.data.twitchChoices.length > 0) {
+            const choiceRe = /(?<a>^\w+)(?<b>.*)/i;
+            const result = choiceRe.exec(groups.args);
+            groups.choice = result.a;
+            groups.parsedArgs = result.b;
+        }
+
+        //Increment use Counter in the DB
+        this.#incrementUse.run(commandID);
+
+        Emitter.emit(`Command:${cmd.data.commandName}`, groups.args, Clients, Emitter);
+        Emitter.emit('CommandExec', cmd.data.commandName, groups.args,  Clients, Emitter);
+
+        //Do the dispatch
+        try { //Generic first
+            cmd.callback(Emitter, {twitch: Clients}, groups.args);
+        } catch (e) {
+            c.warn(`Failed to execute command ${cmd.data.commandName} with error:`);
+            c.warn(`\t${e}`);
+        }
+        try { //Twitch command
+            cmd.twitchCallback(Emitter, Clients, channel, user, groups.choice, groups.parsedArgs, messageObject);
+        } catch (e) {
+            c.warn(`Failed to execute Twitch command ${cmd.data.commandName} with error:`);
+            c.warn(`\t${e}`);
+        }
+        //Reply with Content
+        if (cmd.data.replyInDMs || channel == null) {
+            Clients.chat.whisper(user, cmd.data.reply);
+        } else {
+            Clients.chat.say(channel, cmd.data.reply, messageObject);
+        }
+    }
+    #twitchWhisperHandle(Emitter, Clients, user, message, messageObject) {
+        //Handle commands too cause why not
+        this.#twitchMessageHandle(Emitter, Clients, null, user, message, messageObject);
+    }
+    //Guaranteed to be a Command here
+    #discordCommandHandle(Emitter, Bot, interaction) {
+        const commandID = this.#commandAliases[interaction.commandName];
+
+        if (!commandID) {
+            c.warn(`Invalid Discord Command invoked! /${interaction.commandName}`);
+            interaction.reply({content: "Sorry, that didn't work", ephemeral: true});
+            return;
+        }
+        const cmd = this.#commands[commandID];
+
+        //Increment use Counter in the DB
+        this.#incrementUse.run(commandID);
+
+        Emitter.emit(`Command:${cmd.data.commandName}`, groups.args, Clients, Emitter);
+        Emitter.emit('CommandExec', cmd.data.commandName, groups.args,  Clients, Emitter);
+
+        //Do the dispatch
+        const args = /(?:^.)(?:\w+)? *(?<args>.+)*/g.exec(interaction.toString()).groups.args
+        try { //Generic first
+            cmd.callback(Emitter, {discord: Bot}, args);
+        } catch (e) {
+            c.warn(`Failed to execute command ${cmd.data.commandName} with error:`);
+            c.warn(`\t${e}`);
+        }
+
+        try { //Discord command
+            cmd.discordCallback(Emitter, Bot, interaction);
+        } catch (e) {
+            c.warn(`Failed to execute Twitch command ${cmd.data.commandName} with error:`);
+            c.warn(`\t${e}`);
+        }
+
+        //TODO:
+        //Reply with content | Probably send to channel by hand?
         //Find out if replying removes the interaction
     }
     
@@ -158,7 +253,33 @@ class CommandHandler {
      */
     #registerDiscordCommand;
     #registerDiscordCommandLogic(cmd, DiscordClient) {
-
+        const api = DiscordClient.application.commands;
+        if (cmd.data.isModOnly) {
+            api.create({
+                name: cmd.data.commandName,
+                description:cmd.data.description,
+                type: "CHAT_INPUT",
+                options: cmd.data.discordOptions,
+                defaultPermission: false                
+            }).then(applicationCommand => {
+                api.permissions.add({
+                    command: applicationCommand.id,
+                    permissions: {
+                        id: cnf.discord.modRoleID,
+                        type: 1,
+                        permission: true
+                    }
+                });
+            });
+        } else {
+            api.create({
+                name: cmd.data.commandName,
+                description:cmd.data.description,
+                type: "CHAT_INPUT",
+                options: cmd.data.discordOptions,
+                defaultPermission: cmd.data.enabled && cmd.data.discordEnabled
+            });
+        }
     }
     /**
      * Deletes a single command from the Discord API
@@ -166,7 +287,14 @@ class CommandHandler {
      */
     #deleteDiscordCommand;
     #deleteDiscordCommandLogic(cmd, DiscordClient) {
-
+        const api = DiscordClient.application.commands;
+        api.create({
+            name: cmd.data.commandName,
+            type: "CHAT_INPUT",
+            defaultPermission: false
+        }).then(applicationCommand=> {
+            applicationCommand.delete();
+        });
     }
     #registerCommandsToDiscord(DiscordClient) {
         this.#registerDiscordCommand =  function (cmd) {
@@ -175,16 +303,8 @@ class CommandHandler {
         this.#deleteDiscordCommand =  function (cmd) {
             this.#deleteDiscordCommandLogic(cmd,DiscordClient);
         }
-        const api = DiscordClient.application.commands;
         this.#commands.forEach(async cmd => {
-            cmd = cmd.data;
-            await api.create({
-                name: cmd.commandName,
-                description:cmd.description,
-                type: "CHAT_INPUT",
-                //options: cmd.options,
-                defaultPermission: cmd.enabled && cmd.discordEnabled
-            },'<GUILD_ID_HERE>');
+            this.#registerDiscordCommand(cmd);
         });
     }
     #registerEvents(EventEmitter) {
@@ -230,16 +350,19 @@ class CommandHandler {
 
         const cmdFromRow = (row) => {
             const domain = JSON.parse(row.domain);
+            const options = JSON.parse(row.options);
             return {
                 data: {
-                    enabled: row.enabled,
-                    modOnly: row.modOnly,
+                    enabled: row.enabled == 0 ? false : true,
+                    modOnly: row.modOnly == 0 ? false : true,
                     twitchEnabled: domain.twitch,
                     discordEnabled: domain.discord,
                     commandName: row.commandName,
                     aliases: new Set(), //Gets populated later
-                    options: JSON.parse(row.options),
+                    twitchChoices: options.twitch,
+                    discordOptions: options.discord,
                     reply: row.content,
+                    replyInDMs: row.replyDM == 0 ? false : true,
                     description: row.description
                 },
                 callback: async () => { },
@@ -313,6 +436,8 @@ class CommandHandler {
 
         const domainString = `{"twitch":${cmd.data.twitchEnabled},"discord":${cmd.data.discordEnabled}}`;
 
+        const options = JSON.stringify({twitch: cmd.data.twitchChoices, discord:cmd.data.discordOptions});
+
         //Check info object
         const checkDBInfo = (info) => {
             if(info.changes == 0) {
@@ -367,14 +492,15 @@ class CommandHandler {
             }
 
             //Overwrite Database entry with current Data
-            const updateCommand = db.prepare("UPDATE chat_commands SET options=?, enabled=?, modOnly=?, domain=?, content=?, description=? WHERE commandID = @id");
+            const updateCommand = db.prepare("UPDATE chat_commands SET options=?, enabled=?, modOnly=?, domain=?, content=?, replyDM=?, description=? WHERE commandID = @id");
             const info = updateCommand.run(
                 {id: commandID},
-                JSON.stringify(cmd.data.options),
+                options,
                 cmd.data.enabled ? 1 : 0,
                 cmd.data.modOnly ? 1 : 0,
                 domainString,
                 cmd.data.reply,
+                cmd.data.replyInDMs ? 1 : 0,
                 cmd.data.description
             );
 
@@ -438,11 +564,12 @@ class CommandHandler {
             const insertCommand = db.prepare("INSERT INTO chat_commands(commandName, options, enabled, modOnly, domain, content, description, builtFromFile) VALUES (?,?,?,?,?,?,?,?)");
             const info = insertCommand.run(
                 cmd.data.commandName,
-                JSON.stringify(cmd.data.options),
+                options,
                 cmd.data.enabled ? 1 : 0,
                 cmd.data.modOnly ? 1 : 0,
                 domainString,
                 cmd.data.reply,
+                cmd.data.replyInDMs ? 1 : 0,
                 cmd.data.description,
                 fromFile ? 1 : 0
             );
@@ -468,9 +595,10 @@ class CommandHandler {
         }
     }
 
-    #validateCommand(commandName, reply, modOnly, enabled, twitchEnabled, discordEnabled, description, aliases, options) {
+    #validateCommand(commandName, reply, replyInDMs, modOnly, enabled, twitchEnabled, discordEnabled, description, aliases, twitchChoices, discordOptions) {
         if(!commandName) return null;
         reply = reply !== undefined ? reply : null;
+        replyInDMs = replyInDMs !== undefined ? replyInDMs : false;
         modOnly = modOnly !== undefined ? modOnly : false;
         enabled = enabled !== undefined ? enabled : true;
         twitchEnabled = twitchEnabled !== undefined ? twitchEnabled : true;
@@ -483,7 +611,18 @@ class CommandHandler {
         //If it's not a pure array of strings, overwrite it
         if (!aliases.every(i=> typeof i === "string" ))
             aliases = [];
-    
+
+        //If options is not an array, overwrite it
+        if (!twitchChoices?.length)
+            twitchChoices = [];
+        //If it's not a pure array of strings, overwrite it
+        if (!twitchChoices.every(i => typeof i === "string"))
+            twitchChoices = [];
+
+        //If options is not an array, overwrite it
+        if (!discordOptions?.length)
+            discordOptions = [];
+
         //Convert aliases to set to strip duplicates
         var newSet = new Set();
         aliases.forEach(alias =>newSet.add(alias.toLowerCase()));
@@ -501,7 +640,8 @@ class CommandHandler {
                 discordEnabled: discordEnabled,
                 commandName: commandName,
                 aliases: aliases,
-                options: options,
+                twitchChoices: twitchChoices,
+                discordOptions: discordOptions,
                 reply: reply,
                 description: description
             },
@@ -567,6 +707,10 @@ class CommandHandler {
         if (cmdModule.data.modOnly === undefined)
             cmdModule.data.modOnly = false;
         
+        //If config flags aren't set, put default booleans
+        if (cmdModule.data.replyInDMs === undefined)
+            cmdModule.data.replyInDMs = false;
+        
         //If reply isn't set, make it null
         if (cmdModule.data.reply === undefined)
             cmdModule.data.reply = null;
@@ -575,11 +719,15 @@ class CommandHandler {
             cmdModule.data.description = null;
         
         //If options is not an array, overwrite it
-        if (!cmdModule.data.options?.length)
-            cmdModule.data.options = [];
+        if (!cmdModule.data.twitchChoices?.length)
+            cmdModule.data.twitchChoices = [];
         //If it's not a pure array of strings, overwrite it
-        if (!cmdModule.data.options.every(i=> typeof i === "string" ))
-            cmdModule.data.options = [];
+        if (!cmdModule.data.twitchChoices.every(i=> typeof i === "string" ))
+            cmdModule.data.twitchChoices = [];
+
+        //If options is not an array, overwrite it
+        if (!cmdModule.data.discordOptions?.length)
+            cmdModule.data.discordOptions = [];
 
         //If aliases is not an array, overwrite it
         if (!cmdModule.data.aliases.length)
