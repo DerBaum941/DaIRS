@@ -57,9 +57,11 @@ async function init(conf,callbacks) {
 
     //Relay Events :)
     chatClient.onMessage(async (channel, user, message, msg) => {
+        msg.timestamp = Date.now();
         instances.Emitter.emit('TwitchMessage', instances.Emitter, clients, channel, user, message, msg);
     });
     chatClient.onWhisper(async (user, message, msg)=>{
+        msg.timestamp = Date.now();
         instances.Emitter.emit('TwitchWhisper', instances.Emitter, clients, user, message, msg);
     });
 
@@ -139,19 +141,6 @@ async function whisperCallback(user, message, msgObj) {
 }
 
 async function messageCallback(channel, user, message, msgObj) {
-    if(user.userId === botID || message.startsWith(botPrefix)) return;
-    
-    const args = message.slice(1).split(' ');
-    const command = args.shift().toLowerCase();
-    
-    if (command === "ping")
-        chatClient.say(channel, 'Pong!');
-
-    if (command === "pepemods") {
-        const mdos = await chatClient.getMods(channel);
-        chatClient.say(channel, "The mods are " + mdos );
-    }
-
     c.debug(`[Twitch] [${channel}] ${user}: ${message}`);
 }
 

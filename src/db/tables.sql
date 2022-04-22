@@ -44,3 +44,16 @@ CREATE TABLE IF NOT EXISTS command_alias (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS aliasIdx ON command_alias(aliasName);
 CREATE INDEX IF NOT EXISTS commIDx ON command_alias(commandID);
+
+CREATE TABLE IF NOT EXISTS old_command_stats (
+    rowNum INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    commandName TEXT NOT NULL,
+    content TEXT NOT NULL,
+    countUsed INTEGER NOT NULL,
+    deletedOn TEXT NOT NULL
+);
+CREATE TRIGGER IF NOT EXISTS save_command_stats AFTER DELETE ON chat_commands 
+BEGIN
+    INSERT INTO old_command_stats(commandName, content, countUsed, deletedOn)
+        VALUES(OLD.commandName, OLD.content, OLD.countUsed, date('NOW'));
+END;

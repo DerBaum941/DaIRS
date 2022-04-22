@@ -2,8 +2,6 @@ const Discord = require('discord.js');
 const path = require('path')
 const fs = require('fs')
 const c = require('./../common/logman.js')
-const { Routes } = require('discord-api-types/v9');
-const { REST } = require('@discordjs/rest');
 const commands = [];
 const commandFiles = fs.readdirSync(__dirname + '/commands').filter(file => file.endsWith('.js'));
 

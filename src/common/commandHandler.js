@@ -4,11 +4,13 @@ const cnf = require('../../conf/general.json');
 const fs = require('fs');
 const path = require('path');
 const { hrtime } = require('process');
-const { Console } = require('console');
 
 //Todo
-//Split data.options into Valid Discord Options and Choices for Twitch...
-//Add Commands Scope to bot invite
+//Prune discord commands that arent used
+//Prune unused in DB
+//Eventually: parse things like $user
+
+//DO Register events with higher order func for Clients
 
 /*  =======================================
  *                  Constants
@@ -42,7 +44,7 @@ class CommandHandler {
         this.#parseDatabase();
 
         try {
-            this.#registerEvents(modules.Emitter);
+            this.#registerEvents(modules.Emitter, modules.Disord, modules.Twitch);
             this.#registerCommandsToDiscord(modules.Discord.bot);
         } catch {
             throw 'You must first load this module with valid initalizers';
@@ -69,8 +71,8 @@ class CommandHandler {
      */
     addCustomCommand(commandName, reply, { replyInDMs, modOnly, enabled, twitchEnabled, discordEnabled, description, aliases, twitchChoices, discordOptions }) {
         //Simple check for Duplicate
-        if (findCommandByName(commandName)) {
-            return null;
+        if (this.#commandAliases[commandName]) {
+            return false;
         }
         //Create basic command object
         const cmd = this.#validateCommand(commandName, reply, replyInDMs, modOnly, enabled, twitchEnabled, discordEnabled, description, aliases, twitchChoices, discordOptions);
@@ -78,8 +80,9 @@ class CommandHandler {
         //Cache it
         const result = this.#registerCommand(cmd, false);
         if (!result) {
-            return null;
+            return false;
         }
+        return true;
     }
     /**
      * Delete a command or alias
@@ -87,21 +90,46 @@ class CommandHandler {
      * @returns {boolean} True if successfully deleted something
      */
     delCustomCommand(commandName) {
-        const cmd = this.#getCommandByName(commandName);
-        //Delete from DB? Or keep stats somewhere else?
+        const cmdID = this.#commandAliases[commandName];
+        const isFile = db.prepare("SELECT builtFromFile FROM chat_commands WHERE commandID = ?").pluck().get(cmdID);
+        if (isFile == 1) return false;
+        const changes = db.prepare("DELETE FROM chat_commands WHERE commandID = ?").run(cmdID).changes;
+        c.debug(`Deleted command ${commandName} [${changes} rows affected]`);
+
         //Remove Aliases
+        this.#commands[cmdID].forEach(alias => {
+            delete this.#commandAliases[alias];
+        });
+
         //Delete from Cache
-        
+        delete this.#commands[cmdID];
+        return true;
     }
-    enCustomCommand() {
+    enCustomCommand(commandName) {
+        const cmdID = this.#findCommandByName(commandName);
         //Find command, set enabled, load aliases + name
-        //Unregister from Discord
+        this.#commands[cmdID].enabled = true;
 
-    }
-    disCustomCommand() {
-        //Find command, set disabled, delete aliases + name
+        const cmd = this.#commands[cmdID]
+        cmd.forEach(alias => {
+            this.#commandAliases[alias] = cmdID;
+        });
+        this.#commandAliases[cmd.data.commandName] = cmdID;
         //Register to Discord
+        this.#registerDiscordCommand(cmd);
+    }
+    disCustomCommand(commandName) {
+        const cmdID = this.#commandAliases[commandName];
 
+        //Remove Aliases
+        this.#commands[cmdID].forEach(alias => {
+            delete this.#commandAliases[alias];
+        });
+        this.#commands[cmdID].enabled = false;
+        db.prepare("UPDATE chat_commands SET enabled = ? WHERE commandID = ?").run(0, cmdID);
+
+        //Unregister to Discord
+        this.#deleteDiscordCommand(this.#commands[cmdID]);
     }
 
     /*  =======================================
@@ -120,7 +148,10 @@ class CommandHandler {
         var groups = commandRe.exec(message)?.groups;
 
         //Has the correct prefix
-        if (!groups || groups.prefix != cnf.twitch.commandPrefix) return;
+        if (!groups || groups.prefix != cnf.twitch.commandPrefix || !groups.cmd) return;
+
+        //match case insensitive
+        groups.cmd = groups.cmd.toLowerCase();
 
         //Command exists
         const commandID = this.#commandAliases[groups.cmd];
@@ -129,23 +160,25 @@ class CommandHandler {
         const cmd = this.#commands[commandID];
 
         //Check if choices have been met
-        const pass = cmd.data.twitchChoices.some(choice => groups.args.startsWith(choice));
-        if (!pass) {
-            //todo: reply incorrect usage
+        const requirement = cmd.data.twitchChoices.length == 0 || (cmd.data.twitchChoices.length > 0 && groups.args);
+        const pass = groups.args ? cmd.data.twitchChoices.some(choice => groups.args.startsWith(choice)) : true;
+        //If they haven't, give a nice error
+        if (!pass || !requirement) {
             //switch by reply flag
             var choicesStr = "["
             cmd.data.twitchChoices.forEach(ch => choicesStr+=ch+'|');
-            choicesStr.replace(/.$/,']');
-            const errorReply = `Incorrect usage! Try:${groups.prefix}${groups.cmd} ${choicesStr}`;
+            choicesStr = choicesStr.replace(/.$/,']');
+            const errorReply = `Incorrect usage! Try: ${groups.prefix}${groups.cmd} ${choicesStr}`;
             if (cmd.data.replyInDMs || channel == null) {
                 Clients.chat.whisper(user, errorReply);
             } else {
-                Clients.chat.say(channel, errorReply, messageObject);
+                Clients.chat.say(channel, errorReply, {replyTo: messageObject});
             }
+            return;
         }
 
-        //If choices were defined, extract it
-        if (cmd.data.twitchChoices.length > 0) {
+        //If choices were defined and met, extract it
+        if (pass && cmd.data.twitchChoices.length > 0) {
             const choiceRe = /(?<a>^\w+)(?<b>.*)/i;
             const result = choiceRe.exec(groups.args);
             groups.choice = result.a;
@@ -155,8 +188,8 @@ class CommandHandler {
         //Increment use Counter in the DB
         this.#incrementUse.run(commandID);
 
-        Emitter.emit(`Command:${cmd.data.commandName}`, groups.args, Clients, Emitter);
-        Emitter.emit('CommandExec', cmd.data.commandName, groups.args,  Clients, Emitter);
+        Emitter.emit(`Command:${cmd.data.commandName}`, groups.args, {twitch: Clients}, Emitter);
+        Emitter.emit('CommandExec', cmd.data.commandName, groups.args,  {twitch: Clients}, Emitter, cmd);
 
         //Do the dispatch
         try { //Generic first
@@ -171,6 +204,10 @@ class CommandHandler {
             c.warn(`Failed to execute Twitch command ${cmd.data.commandName} with error:`);
             c.warn(`\t${e}`);
         }
+
+        //If no reply, don't reply
+        if (cmd.data.reply === "" || !cmd.data.reply) return;
+
         //Reply with Content
         if (cmd.data.replyInDMs || channel == null) {
             Clients.chat.whisper(user, cmd.data.reply);
@@ -196,11 +233,11 @@ class CommandHandler {
         //Increment use Counter in the DB
         this.#incrementUse.run(commandID);
 
-        Emitter.emit(`Command:${cmd.data.commandName}`, groups.args, Clients, Emitter);
-        Emitter.emit('CommandExec', cmd.data.commandName, groups.args,  Clients, Emitter);
+        const args = /(?:^.)(?:\w+)? *(?<args>.+)*/g.exec(interaction.toString()).groups.args
+        Emitter.emit(`Command:${cmd.data.commandName}`, args, {discord: Bot}, Emitter);
+        Emitter.emit('CommandExec', cmd.data.commandName, args,  {discord: Bot}, Emitter, cmd);
 
         //Do the dispatch
-        const args = /(?:^.)(?:\w+)? *(?<args>.+)*/g.exec(interaction.toString()).groups.args
         try { //Generic first
             cmd.callback(Emitter, {discord: Bot}, args);
         } catch (e) {
@@ -215,9 +252,17 @@ class CommandHandler {
             c.warn(`\t${e}`);
         }
 
-        //TODO:
-        //Reply with content | Probably send to channel by hand?
-        //Find out if replying removes the interaction
+        //If no reply, don't reply
+        if (cmd.data.reply === "" || !cmd.data.reply) return;
+
+        if (!interaction.replied) {
+            interaction.reply({content: cmd.data.reply, ephemeral: cmd.data.replyInDMs});
+        } else {
+            //Append to reply if there already is one
+            interaction.fetchReply().then(reply => interaction.editReply(`${reply.content}\n${cmd.data.reply}`));
+            //Alternatively use follow up
+            //interaction.followUp(cmd.data.reply);
+        }
     }
     
 
@@ -251,7 +296,7 @@ class CommandHandler {
      * Adds a single command to Discord API
      * @param {Command} cmd Command to add to registry
      */
-    #registerDiscordCommand;
+    #registerDiscordCommand = (cmd) => {};
     #registerDiscordCommandLogic(cmd, DiscordClient) {
         const api = DiscordClient.application.commands;
         if (cmd.data.isModOnly) {
@@ -285,7 +330,7 @@ class CommandHandler {
      * Deletes a single command from the Discord API
      * @param {Command} cmd Command to delete from registry
      */
-    #deleteDiscordCommand;
+    #deleteDiscordCommand = (cmd) => {};
     #deleteDiscordCommandLogic(cmd, DiscordClient) {
         const api = DiscordClient.application.commands;
         api.create({
@@ -308,10 +353,11 @@ class CommandHandler {
         });
     }
     #registerEvents(EventEmitter) {
-        EventEmitter.on('TwitchMessage',this.#twitchMessageHandle);
-        EventEmitter.on('TwitchWhisper',this.#twitchWhisperHandle);
-        //EventEmitter.on('DiscordMessage',this.#discordMessageHandle);  //Not implemented. Use Commands instead.
-        EventEmitter.on('DiscordCommand',this.#discordCommandHandle);
+        //Gotta do stupid wrappers because private fields stink :)
+        EventEmitter.on('TwitchMessage', (Emitter, Clients, channel, user, message, messageObject) => this.#twitchMessageHandle(Emitter, Clients, channel, user, message, messageObject));
+        EventEmitter.on('TwitchWhisper', (Emitter, Clients, user, message, messageObject) => this.#twitchWhisperHandle(Emitter, Clients, user, message, messageObject));
+        //EventEmitter.on('DiscordMessage',() => this.#discordMessageHandle);  //Not implemented. Use Commands instead.
+        EventEmitter.on('DiscordCommand',(Emitter, Bot, interaction) => this.#discordCommandHandle(Emitter, Bot, interaction));
     }
 
     #parseFiles() {
@@ -561,7 +607,7 @@ class CommandHandler {
             }
 
             //Create Database Entries
-            const insertCommand = db.prepare("INSERT INTO chat_commands(commandName, options, enabled, modOnly, domain, content, description, builtFromFile) VALUES (?,?,?,?,?,?,?,?)");
+            const insertCommand = db.prepare("INSERT INTO chat_commands(commandName, options, enabled, modOnly, domain, content, replyDM, description, builtFromFile) VALUES (?,?,?,?,?,?,?,?,?)");
             const info = insertCommand.run(
                 cmd.data.commandName,
                 options,
@@ -780,7 +826,7 @@ class CommandHandler {
             cmd.callback(args);
 
             //Increment DB Counter
-            const query = 'UPDATE SET `countUsed`=`countUsed`+1 WHERE commandID = ?';
+            const query = 'UPDATE chat_commands SET `countUsed`=`countUsed`+1 WHERE commandID = ?';
             const info = db.prepare(query).run(commandID);
 
             if (!info || info?.changes == 0)

@@ -17,9 +17,6 @@ exports.data = {
     //Optional. Must be globally unique
     aliases: ['ex','test'],            //Aliases the command is available as
 
-    //Default: None
-    options: ['option1','option2'],    //Only provided options are accepted as the second argument
-
     reply: 'Example command success!', //Message to always reply with when Command is called
 
     description:                       //Text used for documenting
