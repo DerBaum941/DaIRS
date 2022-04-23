@@ -13,7 +13,7 @@ const express      = require('express');
 const passport     = require('passport');
 var session        = require('express-session');
 var OAuth2Strategy = require('passport-oauth').OAuth2Strategy;
-  const https        = require('https');
+const https        = require('https');
 var handlebars     = require('handlebars');
 var { randomBytes }= require('crypto');
 var path           = require('path');
@@ -32,9 +32,12 @@ var TWITCH_CLIENT_ID;
 var TWITCH_SECRET;
 const SESSION_SECRET   =  randomBytes(64).toString('hex');
 const CALLBACK_URL     = 'http://localhost:3000/auth/twitch/callback';  // You can run locally with - http://localhost:3000/auth/twitch/callback
-const DEFAULT_SCOPE    = 'chat:read+chat:edit+whispers:read+whispers:edit';  // '?scope=channel:moderate+chat:edit+chat:read'
-const MAX_SCOPE        = 'chat:read+chat:edit+bits:read+moderation:read+channel:manage:polls+channel:manage:predictions+channel:manage:redemptions+channel:read:hype_train'+
-                         '+channel:read:polls+channel:read:predictions+channel:read:redemptions'
+const DEFAULT_SCOPE    = ['chat:read',"channel:read:redemptions"];
+const BOT_SCOPE        = ['chat:read','chat:edit','channel:moderate','whispers:read','whispers:edit'];
+//const MAX_SCOPE        = 'chat:read+chat:edit+bits:read+moderation:read+channel:manage:polls+channel:manage:predictions+channel:manage:redemptions+channel:read:hype_train'+
+//                         '+channel:read:polls+channel:read:predictions+channel:read:redemptions'
+const ACTIVE_SCOPE     = BOT_SCOPE;
+const USER_SCOPE       = DEFAULT_SCOPE;
 
 {
     const authpath = path.normalize(__dirname+'./../../conf/credentials.json');
@@ -59,24 +62,6 @@ app.use(passport.session());
 
 // Override passport profile function to get user profile from Twitch API
 OAuth2Strategy.prototype.userProfile = (accessToken, done) => {
-
-  /*
-  var options = {
-    url: 'https://api.twitch.tv/helix/users',
-    method: 'GET',
-    headers: {
-      'Client-ID': TWITCH_CLIENT_ID,
-      'Accept': 'application/vnd.twitchtv.v5+json',
-      'Authorization': 'Bearer ' + accessToken
-    }
-  };
-  Request(options, (error, response, body) => {
-    if (response && response.statusCode == 200) {
-      done(null, JSON.parse(body));
-    } else {
-      done(JSON.parse(body));
-    }
-  }); */
 
   const httpsOptions = {
     hostname: 'api.twitch.tv',
@@ -105,8 +90,8 @@ passport.deserializeUser((user, done) => {
 });
 
 passport.use('twitch', new OAuth2Strategy({
-    authorizationURL: 'https://id.twitch.tv/oauth2/authorize?scope='+DEFAULT_SCOPE,
-    tokenURL: 'https://id.twitch.tv/oauth2/token?scope='+DEFAULT_SCOPE,
+    authorizationURL: 'https://id.twitch.tv/oauth2/authorize',
+    tokenURL: 'https://id.twitch.tv/oauth2/token',
     clientID: TWITCH_CLIENT_ID,
     clientSecret: TWITCH_SECRET,
     callbackURL: CALLBACK_URL,
@@ -123,7 +108,9 @@ passport.use('twitch', new OAuth2Strategy({
 ));
 
 // Set route to start OAuth link, this is where you define scopes to request
-app.get('/auth/twitch', passport.authenticate('twitch' /*, { scope: DEFAULT_SCOPE }*/));
+app.get('/auth/twitch', passport.authenticate('twitch', {scope: ACTIVE_SCOPE}));
+app.get('/auth/twitch/bot', passport.authenticate('twitch', {scope: BOT_SCOPE}));
+app.get('/auth/twitch/user', passport.authenticate('twitch', {scope: USER_SCOPE}));
 
 // Set route for OAuth redirect
 app.get('/auth/twitch/callback', passport.authenticate('twitch', { successRedirect: '/auth/twitch/success', failureRedirect: '/' }));
@@ -162,6 +149,9 @@ app.get('/auth/twitch/success', (req, res) => {
 app.get('/', (req, res) => {
   res.send(`<html><head><title>Twitch Auth</title></head><a href="/auth/twitch">
   <b>Click to give away all your data</b><br>
+  <img src="https://cdn.betterttv.net/emote/58ae8407ff7b7276f8e594f2/3x"></a>
+  <br><a href="/auth/twitch/user">
+  <b>Click to let me look at your channel</b><br>
   <img src="https://cdn.betterttv.net/emote/58ae8407ff7b7276f8e594f2/3x"></a></html>`);
 });
 

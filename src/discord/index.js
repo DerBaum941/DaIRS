@@ -2,24 +2,10 @@ const Discord = require('discord.js');
 const path = require('path')
 const fs = require('fs')
 const c = require('./../common/logman.js')
-const commands = [];
-const commandFiles = fs.readdirSync(__dirname + '/commands').filter(file => file.endsWith('.js'));
 
 var instances;
 
 const bot = new Discord.Client({intents: [Discord.Intents.FLAGS.GUILDS]});
-
-
-function deployCommands (guildId) {
-
-    //LITERALLY a one-liner
-    //idk what the frick you were lookin at
-    commands.forEach(cmd => bot.application.commands.create({cmd},guildId));
-
-    //bot.rest.put(Routes.applicationCommands(clientId), { body: commands })
-	//    .then(() => c.inf('Successfully registered Discord commands'))
-	//    .catch(console.error);
-}
 
 function init(conf, callbacks) {
     instances = callbacks;
@@ -45,19 +31,6 @@ function init(conf, callbacks) {
         
         if (interaction.isCommand())
             instances.Emitter.emit('DiscordCommand', instances.Emitter, bot, interaction);
-
-        /*
-        const command = bot.commands.get(interaction.commandName);
-
-        if (!command) return;
-
-        try {
-            await command.execute(interaction);
-        } catch (error) {
-            console.error(error);
-            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-        }
-        */
     });
 
     bot.on('message', async msg => {
@@ -81,6 +54,18 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 exports.init = init;
 exports.bot = bot;
 
+/*
+function deployCommands (guildId) {
+
+    //LITERALLY a one-liner
+    //idk what the frick you were lookin at
+    commands.forEach(cmd => bot.application.commands.create({cmd},guildId));
+
+    //bot.rest.put(Routes.applicationCommands(clientId), { body: commands })
+	//    .then(() => c.inf('Successfully registered Discord commands'))
+	//    .catch(console.error);
+}
+*/
 /*
 //FUCK ME
 //This sucks

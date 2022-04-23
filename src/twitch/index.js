@@ -7,9 +7,7 @@ const { ChatClient } = require('@twurple/chat');
 const { ApiClient } = require('@twurple/api');
 const { BasicPubSubClient, PubSubClient } = require('@twurple/pubsub');
 
-var botID;
-var botPrefix;
-var channels;
+var botID, channels, redeemChannel, redeemID;
 
 var authorizedChannels = [];
 var apiAuthorizers = [];
@@ -29,8 +27,10 @@ var instances;
 async function init(conf,callbacks) {
     instances = callbacks;
     botID = conf.selfID;
-    botPrefix = conf.commandPrefix;
     channels = conf.channels;
+
+    redeemChannel = conf.redeem_streak_channel;
+    redeemID = redeem_streak_reward_id;
 
     //Config Parse
     const authpath = path.normalize(__dirname + './../../conf/credentials.json');
@@ -49,9 +49,11 @@ async function init(conf,callbacks) {
 
     await initChatClient();
 
+
+    const clients = await initPubSub({chat: chatClient, api: apiClient});
+
     //TODO:
     //ADD PubSub & EventSub Clients
-    const clients = {chat: chatClient, api: apiClient};
 
     instances.Emitter.on('NewTwitchAuth', newAuthCallback);
 
@@ -64,6 +66,8 @@ async function init(conf,callbacks) {
         msg.timestamp = Date.now();
         instances.Emitter.emit('TwitchWhisper', instances.Emitter, clients, user, message, msg);
     });
+
+    exports.Clients = {chat: chatClient, api: apiClient, pubsub: pubSubClient};
 
     return new Promise(res=>setTimeout(res,100));
 }
@@ -109,6 +113,14 @@ function initChatClient() {
 
     chatClient = new ChatClient({authProvider: authProvider, channels:authorizedChannels, requestMembershipEvents: true, isAlwaysMod: true});
 
+    chatClient.isMod = (userId) => {
+
+    }
+    chatClient.isModByName = (user) => {
+        const id = apiClient.users.getUserByName(user).id
+        return chatClient.isMod(id);
+    }
+
     chatClient.onRegister(registerCallback);
 
     chatClient.onMessage(messageCallback);
@@ -120,6 +132,31 @@ function initChatClient() {
     return new Promise( res=>setTimeout( ()=>res(1),1000 ) );
 }
 
+async function initPubSub(clients) {
+    clients.pubSubClient
+    pubSubClient = new PubSubClient();
+    pubSubClient.userIDs = [];
+    apiAuthorizers.forEach((auth)=> {
+        pubSubClient.userIDs.push(await pubSubClient.registerUserListener(auth));
+    });
+    clients.pubsub = pubSubClient;
+
+    pubSubClient.userIDs.forEach((id)=> {
+        addPubSubEvents(id,clients);
+    });
+    return clients;
+}
+function addPubSubEvents(userID,clients) {
+    pubSubClient.onRedemption(userID, async (message) => {
+        instances.Emitter.emit('TwitchRedeem', instances.Emitter, clients, message);
+    });
+    pubSubClient.onBits(userID, async (message) => {
+        instances.Emitter.emit('TwitchBits', instances.Emitter, clients, message);
+    });
+    pubSubClient.onSubscription(userID, async (message) => {
+        instances.Emitter.emit('TwitchSub', instances.Emitter, clients, message);
+    });
+}
 /*
  *  Module exports
  */
@@ -134,14 +171,6 @@ exports.isStreamLive = isStreamLive;
 async function registerCallback() {
     c.debug(`Connecting to channels ${authorizedChannels.toString()}`);
     c.inf("Connected to Twitch Chat as " + chatClient.currentNick);
-}
-
-async function whisperCallback(user, message, msgObj) {
-    c.debug(`[Whisper] ${user}: ${message}`);
-}
-
-async function messageCallback(channel, user, message, msgObj) {
-    c.debug(`[Twitch] [${channel}] ${user}: ${message}`);
 }
 
 function AuthRefreshCallback(data,userID) {

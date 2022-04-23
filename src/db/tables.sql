@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS twitch_auth_tokens (
 
 CREATE TABLE IF NOT EXISTS twitch_redeem_streak (
     userID INTEGER PRIMARY KEY NOT NULL,
-    streakCount INTEGER NOT NULL DEFAULT 0,
-    streakActive INTEGER NOT NULL DEFAULT 0
+    streakCount INTEGER NOT NULL DEFAULT 1,
+    streakActive INTEGER NOT NULL DEFAULT 1
 ) WITHOUT ROWID;
 
 CREATE TABLE IF NOT EXISTS twitch_redeem_stats (

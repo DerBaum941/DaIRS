@@ -1,11 +1,10 @@
-const path = require('path');
 const jobs = require('./scheduled.js');
 const c = require('./logman.js');
-const ev = require('./event').Emitter;
 var instances = {};
-instances.Emitter = ev;
 
 async function init(conf) {
+
+    instances.Emitter = require('./event.js').Emitter;
     
     /*
      *  Basic Connectors
@@ -33,10 +32,11 @@ async function init(conf) {
      *  Additional Modules & Functionality
      */
     instances.Commands = require('./commandHandler.js')(instances);
+    instances.redeemStreaks = require('./redeem_streak.js');
+    instances.redeemStreaks.init(conf.twitch, instances);
     
    c.inf("Completed initialization of "+conf.project_name);
 }
 
 exports.Init = init;
-exports.Emitter = ev;
 exports.Instances = instances;
