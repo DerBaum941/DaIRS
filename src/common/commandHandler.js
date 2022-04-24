@@ -34,7 +34,10 @@ class CommandHandler {
      *              Public functions
      *  =======================================
      */
-    constructor(modules) {
+    constructor() {
+        //Yeah circular dependencies are fun
+    }
+    #init(modules) {
         const start = hrtime.bigint();
         //Load command files
         this.#parseFiles();
@@ -55,12 +58,13 @@ class CommandHandler {
         const commandCount = Object.keys(this.#commands).length;
         const aliasCount = Object.keys(this.#commandAliases).length;
         c.inf(`Loaded ${commandCount} commands(${aliasCount-commandCount} Aliases) in ${elapsed}ms.`);
-
     }
 
     static get(...args) {
-        if (this.#instance === undefined)
-            this.#instance = new CommandHandler(...args);
+        if (this.#instance === undefined) {
+            this.#instance = new CommandHandler();
+            this.#instance.#init(...args);
+        }
         return this.#instance;
     }
 
@@ -113,45 +117,72 @@ class CommandHandler {
      */
     delCustomCommand(commandName) {
         const cmdID = this.#commandAliases[commandName];
+        if (!cmdID) return false;
+        if (!this.#commands[cmdID]) return false;
+
         const isFile = db.prepare("SELECT builtFromFile FROM chat_commands WHERE commandID = ?").pluck().get(cmdID);
         if (isFile == 1) return false;
+
         const changes = db.prepare("DELETE FROM chat_commands WHERE commandID = ?").run(cmdID).changes;
         c.debug(`Deleted command ${commandName} [${changes} rows affected]`);
 
         //Remove Aliases
-        this.#commands[cmdID].forEach(alias => {
+        this.#commands[cmdID].data.aliases.forEach(alias => {
             delete this.#commandAliases[alias];
         });
-
+        this.#deleteDiscordCommand(this.#commands[cmdID]);
         //Delete from Cache
         delete this.#commands[cmdID];
         return true;
     }
     enCustomCommand(commandName) {
         const cmdID = this.#findCommandByName(commandName);
+        if (!cmdID) return false;
         //Find command, set enabled, load aliases + name
-        this.#commands[cmdID].enabled = true;
+        this.#commands[cmdID].data.enabled = true;
 
         const cmd = this.#commands[cmdID]
-        cmd.forEach(alias => {
+        cmd.data.aliases.forEach(alias => {
             this.#commandAliases[alias] = cmdID;
         });
         this.#commandAliases[cmd.data.commandName] = cmdID;
         //Register to Discord
         this.#registerDiscordCommand(cmd);
+        return true;
     }
     disCustomCommand(commandName) {
         const cmdID = this.#commandAliases[commandName];
+        if (!cmdID) return false;
 
         //Remove Aliases
-        this.#commands[cmdID].forEach(alias => {
+        this.#commands[cmdID].data.aliases.forEach(alias => {
             delete this.#commandAliases[alias];
         });
-        this.#commands[cmdID].enabled = false;
+        this.#commands[cmdID].data.enabled = false;
         db.prepare("UPDATE chat_commands SET enabled = ? WHERE commandID = ?").run(0, cmdID);
 
         //Unregister to Discord
         this.#deleteDiscordCommand(this.#commands[cmdID]);
+        return true;
+    }
+    /**
+     * Add and register a basic command
+     * @param {String} commandName Required, Unique: Command to call
+     * @param {String} reply Required: Text to reply with
+     * @param {Boolean} modOnly Optional: Default false
+     * @returns {Boolean} True if command was registered sucessfully
+     */
+    addSimpleCommand(commandName, reply, modOnly) {
+        if (this.#commandAliases[commandName]) {
+            return false;
+        }
+        const cmd = this.#validateCommand(commandName, reply, undefined, modOnly);
+        if (!cmd) return false;
+        
+        const success = this.#registerCommand(cmd, false);
+        if (!success) return false;
+        this.#registerCommand(cmd);
+        return true;
     }
 
     /*  =======================================
@@ -182,7 +213,9 @@ class CommandHandler {
         const cmd = this.#commands[commandID];
 
         //ModOnly Check in channels
-        if (channel && cmd.modOnly && !messageObject.userInfo.isMod) return;
+        if (channel && cmd.modOnly && !(messageObject.userInfo.isMod || Clients.chat.isMod(user))) return;
+        //Has to be on the list for whispers
+        if (!channel && cmd.modOnly && !Clients.chat.isMod(user)) return;
 
         const checkOnce = () => {
             //Only check if there is choices defined
@@ -219,10 +252,10 @@ class CommandHandler {
         } 
         //If choices were defined and met, extract it
         else if (cmd.data.twitchChoices.length > 0) {
-            const choiceRe = /(?<a>^\w+)(?<b>.*)/i;
+            const choiceRe = /(?<a>^\w+) (?<b>.*)/i;
             const result = choiceRe.exec(groups.args);
-            groups.choice = result.a;
-            groups.parsedArgs = result.b;
+            groups.choice = result.groups.a.toLowerCase();
+            groups.parsedArgs = result.groups.b;
         }
 
         //Increment use Counter in the DB
@@ -240,16 +273,19 @@ class CommandHandler {
                 c.warn(`Failed to execute Twitch command ${cmd.data.commandName} with error:`);
                 c.warn(`\t${e}`);
             }
+            Clients.twitch.chat.say(channel, "Provided arguments are invalid", messageObject);
             errored = true;
         }
 
         try { //Twitch command
+            groups.parsedArgs = groups.parsedArgs === undefined ? groups.args : groups.parsedArgs;
             await cmd.twitchCallback(Emitter, Clients, channel, user, groups.choice, groups.parsedArgs, messageObject);
         } catch (e) {
             if (e != "rejected") {
                 c.warn(`Failed to execute Twitch command ${cmd.data.commandName} with error:`);
                 c.warn(`\t${e}`);
             }
+            Clients.twitch.chat.say(channel, "Provided arguments are invalid", messageObject);
             errored = true;
         }
 
@@ -285,7 +321,10 @@ class CommandHandler {
         const cmd = this.#commands[commandID];
 
         //modCheck; Shouldn't be necessary bc command perms but whatever
-        if (cmd.modOnly && !interaction.memberPermissions.has("MANAGE_MESSAGES",true)) return;
+        if (cmd.modOnly && !interaction.memberPermissions.has("MANAGE_MESSAGES",true)) {
+            interaction.reply({content: "You're not a Mod!", ephemeral: true});
+            return;
+        };
 
         //Increment use Counter in the DB
         this.#incrementUse.run(commandID);
@@ -300,9 +339,10 @@ class CommandHandler {
             await cmd.callback(Emitter, Clients, args);
         } catch (e) {
             if (e != "rejected") {
-                c.warn(`Failed to execute Twitch command ${cmd.data.commandName} with error:`);
+                c.warn(`Failed to execute Discord command ${cmd.data.commandName} with error:`);
                 c.warn(`\t${e}`);
-            } else {
+            }
+            if (!interaction.replied) {
                 interaction.reply({content: "Provided arguments are invalid", ephemeral: true});
             }
             errored = true;
@@ -312,9 +352,10 @@ class CommandHandler {
             await cmd.discordCallback(Emitter, Clients, interaction);
         } catch (e) {
             if (e != "rejected") {
-                c.warn(`Failed to execute Twitch command ${cmd.data.commandName} with error:`);
+                c.warn(`Failed to execute Discord command ${cmd.data.commandName} with error:`);
                 c.warn(`\t${e}`);
-            } else if (!interaction.replied) {
+            }
+            if (!interaction.replied) {
                 interaction.reply({content: "Provided arguments are invalid", ephemeral: true});
             }
             errored = true;
@@ -367,7 +408,8 @@ class CommandHandler {
     #registerDiscordCommand = (cmd) => {};
     #registerDiscordCommandLogic(cmd, DiscordClient) {
         const api = DiscordClient.application.commands;
-        if (cmd.data.isModOnly) {
+        /*
+        if (cmd.data.modOnly) {
             api.create({
                 name: cmd.data.commandName,
                 description:cmd.data.description,
@@ -384,7 +426,7 @@ class CommandHandler {
                     }
                 });
             });
-        } else {
+        } else { */
             api.create({
                 name: cmd.data.commandName,
                 description:cmd.data.description,
@@ -392,7 +434,6 @@ class CommandHandler {
                 options: cmd.data.discordOptions,
                 defaultPermission: cmd.data.enabled && cmd.data.discordEnabled
             });
-        }
     }
     /**
      * Deletes a single command from the Discord API
@@ -404,6 +445,7 @@ class CommandHandler {
         api.create({
             name: cmd.data.commandName,
             type: "CHAT_INPUT",
+            description: "I'm gonna delete this",
             defaultPermission: false
         }).then(applicationCommand=> {
             applicationCommand.delete();
@@ -513,9 +555,10 @@ class CommandHandler {
             });
         });
 
+        const length = Object.keys(tmpCommands).length;
         //Sanity check
-        if (tmpCommands.length != commandResult.length) {
-            c.warn(`Failed to fetch all Custom Commands (Got ${tmpCommands.length} of ${commandResult.length})`);
+        if (length != commandResult.length) {
+            c.warn(`Failed to fetch all Custom Commands (Got ${length} of ${commandResult.length})`);
             return;
         }
 
@@ -525,6 +568,7 @@ class CommandHandler {
                 c.warn(`Can't load command ${v.commandName}: Command clashes with already loaded command`);
                 continue;
             }
+            this.#registerDiscordCommand(v);
             this.#commands[k] = v;
         }
         for(const [k,v] of Object.entries(tmpAliases)) {
@@ -745,7 +789,7 @@ class CommandHandler {
         enabled = enabled !== undefined ? enabled : true;
         twitchEnabled = twitchEnabled !== undefined ? twitchEnabled : true;
         discordEnabled = discordEnabled !== undefined ? discordEnabled : true;
-        description = description !== undefined ? description : null;
+        description = description !== undefined ? description : "Custom Chat Command";
     
         //If aliases is not an array, overwrite it
         if (!aliases?.length)
@@ -907,96 +951,8 @@ class CommandHandler {
         }
         return command;
     }
-
-    //Old
-    #dispatch(commandName, args) {
-        //Find Command
-        const commandID = this.#findCommandByName(commandName);
-        if (!commandID) return null;
-
-        const cmd = this.#commands[commandID];
-        if (!cmd) return null;
-
-        //Try to dispatch the callback
-        try {
-            cmd.callback(args);
-
-            //Increment DB Counter
-            const query = 'UPDATE chat_commands SET `countUsed`=`countUsed`+1 WHERE commandID = ?';
-            const info = db.prepare(query).run(commandID);
-
-            if (!info || info?.changes == 0)
-                throw 'Couldn\'t increment use counter for command';
-            else if (info.changes > 1)
-                //This should never EVER happen but just in case
-                throw 'Incrementing use count of command failed horribly';
-        } catch (e) {
-            c.err('Couldn\'t execute command '+commandName);
-            c.err(e);
-        }
-    }
 }
 
 module.exports = (...args) => {
     return CommandHandler.get(...args);
 };
-
-//Deprecated
-//Lasted one entire Day o7
-class Command {
-    #name;
-    #replyText;
-    #isModOnly = false;
-    #aliases = [];
-    #isDiscordCommand = true;
-    #isTwitchCommand = true;
-
-    #callbacks = [];
-    static #numCommands = 0;
-
-    /**
-     * Registers new Command on instatiation
-     * @param {string} name Case Insensitive, w/o prefix (e.g. !ping -> 'Ping')
-     * @param {string} reply Message to reply with when command is called
-     * @param {boolean} modOnly Whether command is restricted to Twitch Mods / Discord "Manage Nessages" Permission
-     * @param {string[]} aliases Default aliases to create (e.g. !test -> ['tset','tets'])
-     * @param {Object {twitch: true, discord: true}} domain Where this command is allowed to be invoked from
-     * @param {boolean} isBuiltin True for system commands that shouldn't be modifyable
-     */
-    constructor(name, reply, modOnly, aliases, domain) {
-        if (!name) throw "Command created with invalid name!";
-        this.#name = name.toLowerCase();
-
-        //Set Inputs or Defaults
-        this.#replyText = reply ? reply : null;
-        this.#isModOnly = modOnly === undefined ? this.#isModOnly : modOnly;
-        this.#aliases = aliases?.length > 0 ? aliases : this.#aliases;
-        this.#isDiscordCommand = domain?.discord === undefined ? this.#isDiscordCommand : domain.discord;
-        this.#isTwitchCommand = domain?.twitch === undefined ? this.#isTwitchCommand : domain.twitch;
-
-        //Increment total func count cuz why not
-        this.#numCommands++;
-    }
-
-    /**
-     * Add a called Function to the Command
-     * @param {(string)=>void} callbackFn Function to dispatch with single string of text, excluding command name
-     */
-    addCallback(callbackFn) {
-        this.#callbacks.push(callbackFn);
-    }
-
-    getName() { return this.#name; }
-    getReply() { return this.#replyText; }
-    isTwitchCommand() { return this.#isTwitchCommand; }
-    isDiscordCommand() { return this.#isDiscordCommand; }
-    isModOnly() { return this.#isModOnly; }
-
-    dispatch(args) {
-        this.#callbacks.forEach(fn => {
-            fn(args);
-        });
-        return this.#replyText;
-    }
-}
-

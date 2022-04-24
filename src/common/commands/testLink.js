@@ -2,7 +2,7 @@ const { URL } = require('url');
 const http = require('http');
 const https = require('https');
 
-const data = {
+exports.data = {
     commandName: 'link',
     enabled: true,
     twitchEnabled: true,
@@ -13,7 +13,7 @@ const data = {
     reply: "Successfully requested the link! \nPlease wait for a Mod to approve it",
     description: "Request link to be sent on stream"
 };
-exports.data = data;
+
 /**
  * Function that gets executed FIRST when command is invoked
  * @param {EventEmitter} Emitter The app's Event Emitter, add callbacks to other things if you want.
@@ -32,8 +32,8 @@ exports.callback = async (Emitter, Clients, args) => {
 
 function testLink(link) {
     //Quality of Life fix
-    if (!link.startsWith("http://") ||
-        !link.startsWith("https://"))
+    if (!(link.startsWith("http://") ||
+        link.startsWith("https://")))
             link = "https://"+link;
 	return new Promise((resolve, rej) => {
 		const url = new URL(link);

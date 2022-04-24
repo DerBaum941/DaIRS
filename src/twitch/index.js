@@ -7,7 +7,7 @@ const { ChatClient } = require('@twurple/chat');
 const { ApiClient } = require('@twurple/api');
 const { BasicPubSubClient, PubSubClient } = require('@twurple/pubsub');
 
-var botID, channels, redeemChannel, redeemID;
+var botID, channels, mods, redeemChannel, redeemID;
 
 var authorizedChannels = [];
 var apiAuthorizers = [];
@@ -28,9 +28,10 @@ async function init(conf,callbacks) {
     instances = callbacks;
     botID = conf.selfID;
     channels = conf.channels;
+    mods = conf.mods;
 
     redeemChannel = conf.redeem_streak_channel;
-    redeemID = redeem_streak_reward_id;
+    redeemID = conf.redeem_streak_reward_id;
 
     //Config Parse
     const authpath = path.normalize(__dirname + './../../conf/credentials.json');
@@ -49,8 +50,7 @@ async function init(conf,callbacks) {
 
     await initChatClient();
 
-
-    const clients = await initPubSub({chat: chatClient, api: apiClient});
+    const clients = initPubSub({chat: chatClient, api: apiClient});
 
     //TODO:
     //ADD PubSub & EventSub Clients
@@ -113,8 +113,8 @@ function initChatClient() {
 
     chatClient = new ChatClient({authProvider: authProvider, channels:authorizedChannels, requestMembershipEvents: true, isAlwaysMod: true});
 
-    chatClient.isMod = (userId) => {
-
+    chatClient.isMod = (username) => {
+        return mods.contains(username);
     }
     chatClient.isModByName = (user) => {
         const id = apiClient.users.getUserByName(user).id
@@ -123,21 +123,18 @@ function initChatClient() {
 
     chatClient.onRegister(registerCallback);
 
-    chatClient.onMessage(messageCallback);
-
-    chatClient.onWhisper(whisperCallback);
-
     chatClient.connect();
 
     return new Promise( res=>setTimeout( ()=>res(1),1000 ) );
 }
 
-async function initPubSub(clients) {
+function initPubSub(clients) {
     clients.pubSubClient
     pubSubClient = new PubSubClient();
     pubSubClient.userIDs = [];
-    apiAuthorizers.forEach((auth)=> {
-        pubSubClient.userIDs.push(await pubSubClient.registerUserListener(auth));
+    apiAuthorizers.forEach(async (auth)=> {
+        const id = await pubSubClient.registerUserListener(auth);
+        pubSubClient.userIDs.push(id);
     });
     clients.pubsub = pubSubClient;
 
