@@ -1,11 +1,9 @@
-const { URL } = require('url');
-const http = require('http');
-const https = require('https');
+const tester = require('../link_whispers.js');
 
 exports.data = {
     commandName: 'link',
     enabled: true,
-    twitchEnabled: true,
+    twitchEnabled: false,
     discordEnabled: true,
     replyInDMs: true,
     discordOptions: [{type: "STRING", name: "url", required:true, 
@@ -21,42 +19,29 @@ exports.data = {
  * @param {string} args String remainder of the original message, excluding commandName
  * @return {void}
  */
+/*
 exports.callback = async (Emitter, Clients, args) => {
     const discordFixRe = /(?:^url:)?(?<url>.*)$/gi;
     args = discordFixRe.exec(args).groups.url;
-	await testLink(args)
+	await tester.testLink(args)
     //If the link is invalid, don't reply;
 	.catch(() =>{ throw "rejected"; })
     .then(() => {console.log("Link requested: "+args)});
 }
+*/
 
-function testLink(link) {
-    //Quality of Life fix
-    if (!(link.startsWith("http://") ||
-        link.startsWith("https://")))
-            link = "https://"+link;
-	return new Promise((resolve, rej) => {
-		const url = new URL(link);
-		switch (url.protocol) {
-			case 'http:':
-				http.request(url, { method: 'HEAD' }, res => {
-					if (!res) rej(false);
-					if (Math.floor(res.statusCode / 100) < 4)
-						resolve(true);
-				}).on('error', rej).end();
-				break;
-			case 'https:':
-				https.request(url, { method: 'HEAD' }, res => {
-					if (!res) rej(false);
-					if (Math.floor(res.statusCode / 100) < 4) {
-						resolve(true);
-					}
-				}).on('error', rej).end();
-				break;
-			default:
-				rej(false);
-				break;
-		}
-	});
+/**
+ * Discord slash command specific callback values
+ * @param {EventEmitter} Emitter The app's Event Emitter, add callbacks to other things if you want.
+ * @param {Clients} Clients {discord: bot, twitch: {chat,api,pubsub,eventsub}}
+ * @param {Object} interaction Interaction of the Discord slash command
+ * @return {void}
+ */
+ exports.discordCallback = async (Emitter, Clients, interaction) => {
+	const link = interaction.options.get("url");
+
+	await tester.testLink(args)
+    //If the link is invalid, don't reply;
+	.catch(() =>{  })
+    .then(() => {tester.queueRedeem(link,interaction.member.displayName)});
 }
-exports.testLink = testLink;

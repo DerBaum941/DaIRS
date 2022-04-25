@@ -1,5 +1,5 @@
 const data = {
-    commandName: 'ping',
+    commandName: 'sugma',
     enabled: true,
     twitchEnabled: true,
     discordEnabled: true,
@@ -15,9 +15,9 @@ exports.data = data;
  * @return {void}
  */
 exports.discordCallback = async (Emitter, Clients, interaction) => {
-    interaction.reply({content:`Pong! (...)`, fetchReply: true}).then(reply => {
+    interaction.reply({content:`Ligma! (...)`, fetchReply: true}).then(reply => {
         const diff = reply.createdTimestamp - interaction.createdTimestamp;
-        interaction.editReply(`Pong! (${diff}ms.)`);
+        interaction.editReply(`Ligma! (${diff}ms.)`);
     });
 }
 
@@ -33,6 +33,5 @@ exports.discordCallback = async (Emitter, Clients, interaction) => {
  * @return {void}
  */
 exports.twitchCallback = async (Emitter, Clients, channel, user, choice, args, msgObj) => {
-    if (!channel) return;
-    Clients.twitch.chat.say(channel, `Pong! (${Date.now() - msgObj.timestamp}ms.)`, {replyTo: msgObj});
+    Clients.twitch.chat.say(channel, `Ligma! (${Date.now() - msgObj.timestamp}ms.)`, {replyTo: msgObj});
 }

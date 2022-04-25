@@ -31,11 +31,18 @@ async function init(conf) {
      *  Additional Modules & Functionality
      */
     instances.Commands = require('./commandHandler.js')(instances);
+    await aBit();
+
     instances.redeemStreaks = require('./redeem_streak.js');
-    //instances.redeemStreaks.init(conf.twitch, instances);
+    instances.redeemStreaks.init(conf.twitch, instances);
+
+    instances.linkWhispers = require('./link_whispers.js');
+    instances.linkWhispers.init(conf, instances);
     
    c.inf("Completed initialization of "+conf.project_name);
 }
 
 exports.Init = init;
 exports.Instances = instances;
+
+async function aBit() {return new Promise(res=>setTimeout(res,500));}

@@ -7,7 +7,7 @@ const { ChatClient } = require('@twurple/chat');
 const { ApiClient } = require('@twurple/api');
 const { BasicPubSubClient, PubSubClient } = require('@twurple/pubsub');
 
-var botID, channels, mods, redeemChannel, redeemID;
+var botID, mods, channel, redeemID;
 
 var authorizedChannels = [];
 var apiAuthorizers = [];
@@ -27,14 +27,13 @@ var instances;
 async function init(conf,callbacks) {
     instances = callbacks;
     botID = conf.selfID;
-    channels = conf.channels;
     mods = conf.mods;
 
-    redeemChannel = conf.redeem_streak_channel;
+    channel = conf.channel;
     redeemID = conf.redeem_streak_reward_id;
 
     //Config Parse
-    const authpath = path.normalize(__dirname + './../../conf/credentials.json');
+    const authpath = path.normalize(__dirname + '../../../conf/credentials.json');
     const auth = JSON.parse(fs.readFileSync(authpath, 'utf8')).twitch;
     clientId = auth.clientID;
     clientSecret = auth.clientSecret;
@@ -46,14 +45,14 @@ async function init(conf,callbacks) {
 
     c.inf("Twitch API Client initialized");
 
-    await initalizeChannels();
+    await initAuths();
 
     await initChatClient();
 
     const clients = initPubSub({chat: chatClient, api: apiClient});
 
     //TODO:
-    //ADD PubSub & EventSub Clients
+    //EventSub Clients
 
     instances.Emitter.on('NewTwitchAuth', newAuthCallback);
 
@@ -67,7 +66,11 @@ async function init(conf,callbacks) {
         instances.Emitter.emit('TwitchWhisper', instances.Emitter, clients, user, message, msg);
     });
 
-    exports.Clients = {chat: chatClient, api: apiClient, pubsub: pubSubClient};
+    chatClient.sendToStreamer = async (content) => {return chatClient.say(channel, content);}
+
+    exports.sendToStream = chatClient.sendToStreamer;
+
+    exports.Clients = {chat: chatClient, api: apiClient, pubsub: pubSubClient, channel: channel};
 
     return new Promise(res=>setTimeout(res,100));
 }
@@ -82,77 +85,100 @@ async function initalizeChannels() {
     });
 }
 
-
-function initChatClient() {
-    const queryData = instances.DB.findRow("twitch_auth_tokens","userID",botID);
+async function initAuths() {
+    const queryData = instances.DB.database.prepare("SELECT * FROM twitch_auth_tokens").all();
 
     if(!queryData) {
         c.warn("[Twitch] Couldn't find User Access Token. Retrying");
         return new Promise(res => {
             setTimeout(async ()=>{
+                await initAuths();
+                res(1);
+            },2000);
+        });
+    }
+
+    queryData.forEach(async row => {
+        const user = await apiClient.users.getUserById(row.userID);
+        authorizedChannels.push(user.name);
+
+        const data = {
+            "accessToken": row.accessToken,
+            "refreshToken": row.refreshToken,
+            "expiresIn": row.expiresIn,
+            "obtainmentTimestamp": row.obtainmentTimestamp,
+            "scope": JSON.parse(row.scope)
+        };
+        apiAuthorizers[row.userID] = new RefreshingAuthProvider({
+            clientId,
+            clientSecret,
+            onRefresh: authRefreshCallback(row.userID)
+        }, data);
+    });
+
+    c.inf("Twitch Token Managing initialized");
+    //c.debug("Pausing process due to rate limiting");
+
+    return new Promise(res=>setTimeout(res,2000));
+}
+
+function initChatClient() {
+    const authProvider = apiAuthorizers[botID];
+
+    if(!authProvider) {
+        c.warn("[Twitch] Couldn't find User Access Token. Retrying");
+        return new Promise(res => {
+            setTimeout(async ()=>{
+                await initAuths();
                 await initChatClient();
                 res(1);
             },2000);
         });
     }
 
-    const data =
-        {
-            "accessToken": queryData.accessToken,
-            "refreshToken": queryData.refreshToken,
-            "expiresIn": queryData.expiresIn,
-            "obtainmentTimestamp": queryData.obtainmentTimestamp,
-            "scope": JSON.parse(queryData.scope)
-        };
-
-    const authProvider = new RefreshingAuthProvider({
-        clientId,
-        clientSecret,
-        onRefresh: authRefreshCallback(botID)
-    }, data);
-
     chatClient = new ChatClient({authProvider: authProvider, channels:authorizedChannels, requestMembershipEvents: true, isAlwaysMod: true});
 
     chatClient.isMod = (username) => {
-        return mods.contains(username);
+        return mods.includes(username);
     }
-    chatClient.isModByName = (user) => {
-        const id = apiClient.users.getUserByName(user).id
-        return chatClient.isMod(id);
+    chatClient.isModByID = async (user) => {
+        const id = await apiClient.users.getUserByName(user);
+        return chatClient.isMod(id.name);
     }
 
     chatClient.onRegister(registerCallback);
 
     chatClient.connect();
 
-    return new Promise( res=>setTimeout( ()=>res(1),1000 ) );
+    return new Promise(res=>setTimeout(res,1000));
 }
 
-function initPubSub(clients) {
-    clients.pubSubClient
+async function initPubSub(clients) {
+    
     pubSubClient = new PubSubClient();
-    pubSubClient.userIDs = [];
-    apiAuthorizers.forEach(async (auth)=> {
-        const id = await pubSubClient.registerUserListener(auth);
-        pubSubClient.userIDs.push(id);
-    });
     clients.pubsub = pubSubClient;
 
-    pubSubClient.userIDs.forEach((id)=> {
-        addPubSubEvents(id,clients);
+    apiAuthorizers.forEach(async (auth)=> {
+        pubSubClient.registerUserListener(auth).then((id) => {
+            addPubSubEvents(id,clients);
+        });
     });
+    
+    c.inf("Twitch Pub/Subs initialized");
     return clients;
 }
 function addPubSubEvents(userID,clients) {
     pubSubClient.onRedemption(userID, async (message) => {
         instances.Emitter.emit('TwitchRedeem', instances.Emitter, clients, message);
     });
+    /*
     pubSubClient.onBits(userID, async (message) => {
         instances.Emitter.emit('TwitchBits', instances.Emitter, clients, message);
     });
     pubSubClient.onSubscription(userID, async (message) => {
         instances.Emitter.emit('TwitchSub', instances.Emitter, clients, message);
     });
+    */
 }
 /*
  *  Module exports

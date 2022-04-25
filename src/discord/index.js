@@ -12,12 +12,7 @@ function init(conf, callbacks) {
     {
         const authpath = path.normalize(__dirname+'./../../conf/credentials.json');
         const auth = JSON.parse(fs.readFileSync(authpath, 'utf8')).discord;
-        //deployCommands(conf.clientId, conf.guildId, auth.token)
         bot.login(auth.token);
-
-        //This would've been much smarter
-        //bot.rest = new REST({ version: '9' }).setToken(token);
-
         delete auth, authpath;
     }
 

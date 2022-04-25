@@ -83,19 +83,28 @@ exports.data = {
  * @return {void}
  */
  exports.discordCallback = async (Emitter, Clients, interaction) => {
-    const option = interaction.options.getSubcommand(true);
-    const name = interaction.options.get("command");
+    var option = interaction.options.getSubcommand(true);
+    const command = interaction.options.get("command").value;
+    var succ = false;
     switch (option) {
         case "add": 
-            const reply = interaction.options.get("reply");
-            const modOnly = interaction.options.get("ismodonly");
+            const reply = interaction.options.get("reply").value;
+            const modOnly = interaction.options.get("ismodonly").value;
+            succ = addCommand(command,reply,modOnly);
             break;
         case "delete":
+            succ = delCommand(command);
             break;
         case "enable":
+            succ = enCommand(command);
             break;
         case "disable":
+            succ = disCommand(command);
             break;
+    }
+    if (succ) {
+        option = option == "add" ? "adde" : option; //Gotta work with what you got
+        interaction.reply(`Successfully ${option}d the command ${command}`);
     }
 }
 
@@ -130,13 +139,14 @@ exports.twitchCallback = async (Emitter, Clients, channel, user, choice, args, m
             break;
     }
     const name = /(?<cmd>\w+)/.exec(args).groups.cmd;
-    Clients.twitch.chat.say(channel, `Successfully ${choiceStr} command ${name}`, msgObj);
+    Clients.twitch.chat.say(channel, `Successfully ${choiceStr} the command ${name}`, {replyTo: msgObj});
 }
 
 function twitchParse(choice, args) {
+    if (!args) return false;
     const optionRe =/^(?<cmd>\w+) ?(?<reply>.*)?$/gi;
     args = optionRe.exec(args);
-    if (!args.groups) return false
+    if (!args?.groups) return false;
 
     const commandName = args.groups.cmd;
     const reply = args.groups.reply;

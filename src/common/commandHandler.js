@@ -52,6 +52,8 @@ class CommandHandler {
             throw 'You must first load this module with valid initalizers';
         }
 
+        //this.#resetAllDiscordCommands();
+
         this.#pruneDatabase();
         //Say something impressive
         const elapsed = (hrtime.bigint() - start) / 1000000n; //ms time
@@ -146,6 +148,7 @@ class CommandHandler {
             this.#commandAliases[alias] = cmdID;
         });
         this.#commandAliases[cmd.data.commandName] = cmdID;
+        db.prepare("UPDATE chat_commands SET enabled = ? WHERE commandID = ?").run(1, cmdID);
         //Register to Discord
         this.#registerDiscordCommand(cmd);
         return true;
@@ -181,7 +184,7 @@ class CommandHandler {
         
         const success = this.#registerCommand(cmd, false);
         if (!success) return false;
-        this.#registerCommand(cmd);
+        this.#registerDiscordCommand(cmd);
         return true;
     }
 
@@ -212,14 +215,15 @@ class CommandHandler {
 
         const cmd = this.#commands[commandID];
 
-        //ModOnly Check in channels
-        if (channel && cmd.modOnly && !(messageObject.userInfo.isMod || Clients.chat.isMod(user))) return;
+        //modCheck in channels
+        if (channel && cmd.data.modOnly && (!(messageObject.userInfo.isMod || messageObject.userInfo.isBroadcaster) && !Clients.twitch.chat.isMod(user))) return;
         //Has to be on the list for whispers
-        if (!channel && cmd.modOnly && !Clients.chat.isMod(user)) return;
+        if (!channel && cmd.data.modOnly && !Clients.twitch.chat.isMod(user)) return;
 
+        const hasChoices = cmd.data.twitchChoices.length > 0;
         const checkOnce = () => {
             //Only check if there is choices defined
-            if (cmd.data.twitchChoices.length == 0) 
+            if (!hasChoices) 
                 return false;
             //If there wasn't anything provided, it failed
             if (!groups.args) 
@@ -238,21 +242,24 @@ class CommandHandler {
             cmd.data.twitchChoices.forEach(ch => choicesStr+=ch+'|');
             choicesStr = choicesStr.replace(/.$/,']');
             const errorReply = `Incorrect usage! Try: ${groups.prefix}${groups.cmd} ${choicesStr}`;
+            if (channel)
+                    Clients.twitch.chat.say(channel, errorReply, {replyTo: messageObject});
+            /*
             if (cmd.data.replyInDMs || channel == null) {
                 //Whispering to users requires verification
                 //Fuck that noise man
                 if (channel)
-                    Clients.twitch.chat.say(channel, cmd.data.reply, messageObject);
+                    Clients.twitch.chat.say(channel, errorReply, {replyTo: messageObject});
                 //Clients.twitch.chat.whisper(user, errorReply);
             } else {
                 Clients.twitch.chat.say(channel, errorReply, {replyTo: messageObject});
             }
+            */
             return;
-            
         } 
         //If choices were defined and met, extract it
-        else if (cmd.data.twitchChoices.length > 0) {
-            const choiceRe = /(?<a>^\w+) (?<b>.*)/i;
+        else if (hasChoices) {
+            const choiceRe = /(?<a>^\w+) ?(?<b>.*)?/i;
             const result = choiceRe.exec(groups.args);
             groups.choice = result.groups.a.toLowerCase();
             groups.parsedArgs = result.groups.b;
@@ -263,6 +270,7 @@ class CommandHandler {
 
         Emitter.emit(`Command:${cmd.data.commandName}`, groups.args, Clients, Emitter);
         Emitter.emit('CommandExec', cmd.data.commandName, groups.args,  Clients, Emitter, cmd);
+        Emitter.emit('TwitchCommand', cmd.data.commandName, user, channel);
 
         var errored = false;
         //Do the dispatch
@@ -273,37 +281,46 @@ class CommandHandler {
                 c.warn(`Failed to execute Twitch command ${cmd.data.commandName} with error:`);
                 c.warn(`\t${e}`);
             }
-            Clients.twitch.chat.say(channel, "Provided arguments are invalid", messageObject);
             errored = true;
+            if (channel) 
+                Clients.twitch.chat.say(channel, "Provided arguments are invalid", messageObject);
         }
 
         try { //Twitch command
-            groups.parsedArgs = groups.parsedArgs === undefined ? groups.args : groups.parsedArgs;
-            await cmd.twitchCallback(Emitter, Clients, channel, user, groups.choice, groups.parsedArgs, messageObject);
+            if (hasChoices) {
+                await cmd.twitchCallback(Emitter, Clients, channel, user, groups.choice, groups.parsedArgs, messageObject);
+            } else {
+                await cmd.twitchCallback(Emitter, Clients, channel, user, groups.choice, groups.args, messageObject);
+            }
         } catch (e) {
             if (e != "rejected") {
                 c.warn(`Failed to execute Twitch command ${cmd.data.commandName} with error:`);
                 c.warn(`\t${e}`);
             }
-            Clients.twitch.chat.say(channel, "Provided arguments are invalid", messageObject);
             errored = true;
+            if (channel)
+                Clients.twitch.chat.say(channel, "Provided arguments are invalid", messageObject);
         }
 
         if (errored) return;
+        if (!channel) return;
         //If no reply, don't reply
         if (cmd.data.reply === "" || !cmd.data.reply) return;
 
+        Clients.twitch.chat.say(channel, cmd.data.reply, {replyTo: messageObject});
+        /*
         //Reply with Content
-        if (cmd.data.replyInDMs || channel == null) {
+        if (cmd.data.replyInDMs ) {
             //Whispering to users requires verification
             //Fuck that noise man
             if (channel)
-                Clients.twitch.chat.say(channel, cmd.data.reply, messageObject);
+                Clients.twitch.chat.say(channel, cmd.data.reply, {replyTo: messageObject});
             //Clients.twitch.chat.whisper(user, cmd.data.reply);
             //Clients.twitch.chat.say(channel ? channel : "derbaum941", `/w ${user} ${message}`);
         } else {
-            Clients.twitch.chat.say(channel, cmd.data.reply, messageObject);
+            
         }
+        */
     }
     #twitchWhisperHandle(Emitter, Clients, user, message, messageObject) {
         //Handle commands too cause why not
@@ -455,7 +472,7 @@ class CommandHandler {
     #registerCommandsToDiscord(DiscordClient) {
         this.#resetAllDiscordCommands = () => {
             DiscordClient.application.commands.set([]);
-            DiscordClient.guilds.forEach(guild => {
+            DiscordClient.guilds.cache.forEach(guild => {
                 DiscordClient.application.commands.set([],guild.id);
             });
             this.#registerCommandsToDiscord(DiscordClient);

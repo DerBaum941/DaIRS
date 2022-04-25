@@ -32,8 +32,9 @@ var TWITCH_CLIENT_ID;
 var TWITCH_SECRET;
 const SESSION_SECRET   =  randomBytes(64).toString('hex');
 const CALLBACK_URL     = 'http://localhost:3000/auth/twitch/callback';  // You can run locally with - http://localhost:3000/auth/twitch/callback
-const DEFAULT_SCOPE    = ['chat:read',"channel:read:redemptions"];
-const BOT_SCOPE        = ['chat:read','chat:edit','channel:moderate','whispers:read','whispers:edit'];
+const DEFAULT_SCOPE    = ['chat:read',"channel:read:redemptions"]; //'channel:read:subscriptions', 'bits:read'
+const BOT_SCOPE        = ['chat:read','chat:edit','channel:moderate','whispers:read','whispers:edit', 'channel:read:redemptions', 
+    'channel:read:predictions', 'channel:read:subscriptions', 'channel:read:predictions', 'channel:read:polls', 'channel:read:hype_train'];
 //const MAX_SCOPE        = 'chat:read+chat:edit+bits:read+moderation:read+channel:manage:polls+channel:manage:predictions+channel:manage:redemptions+channel:read:hype_train'+
 //                         '+channel:read:polls+channel:read:predictions+channel:read:redemptions'
 const ACTIVE_SCOPE     = BOT_SCOPE;
