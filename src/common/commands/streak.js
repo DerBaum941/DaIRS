@@ -20,7 +20,7 @@ exports.data = data;
 
 var api, channel;
 
-const cache_ttl = 300 //Time in seconds; 300 = 5 Minutes
+const cache_ttl = 600 //Time in seconds; 300 = 5 Minutes
 
 /**
  * Discord slash command specific callback values
@@ -189,7 +189,6 @@ async function getStreakByName(name) {
 
 const getBest = db.prepare("SELECT userID, streakCount, achievedAt FROM twitch_redeem_records ORDER BY streakCount DESC LIMIT ?");
 const getTop = db.prepare("SELECT userID, streakCount FROM twitch_redeem_streak ORDER BY streakCount DESC LIMIT ?");
-
 async function leaderBoard(numRows) {
     var result1 = getTop.all(numRows);
     var result2 = getBest.all(numRows);
@@ -211,3 +210,9 @@ async function leaderBoard(numRows) {
 
     return LB;
 }
+
+exports.leaderBoard = leaderBoard;
+exports.getUserInfoName = getUserInfoName;
+exports.getStreamer = getStreamer;
+exports.getUserInfoID = getUserInfoID;
+exports.getStreakByName = getStreakByName;

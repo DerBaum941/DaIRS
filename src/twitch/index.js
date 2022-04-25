@@ -52,7 +52,7 @@ async function init(conf,callbacks) {
     const clients = initPubSub({chat: chatClient, api: apiClient});
 
     //TODO:
-    //EventSub Clients
+    //EventSub Client
 
     instances.Emitter.on('NewTwitchAuth', newAuthCallback);
 

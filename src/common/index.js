@@ -38,6 +38,8 @@ async function init(conf) {
 
     instances.linkWhispers = require('./link_whispers.js');
     instances.linkWhispers.init(conf, instances);
+
+    instances.statAPI = require('../www/api/stats.js');
     
    c.inf("Completed initialization of "+conf.project_name);
 }

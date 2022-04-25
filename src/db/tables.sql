@@ -71,3 +71,41 @@ BEGIN
     INSERT INTO old_command_stats(commandName, content, countUsed, deletedOn)
         VALUES(OLD.commandName, IIF(OLD.content,OLD.content,''), OLD.countUsed, date('NOW'));
 END;
+
+CREATE TABLE IF NOT EXISTS twitch_chat_triggers (
+    triggerName TEXT NOT NULL PRIMARY KEY COLLATE NOCASE,
+    reply TEXT NOT NULL,
+    countUsed INTEGER DEFAULT 0 NOT NULL
+) WITHOUT ROWID;
+
+CREATE TABLE IF NOT EXISTS old_chat_triggers (
+    triggerID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    triggerName TEXT NOT NULL,
+    reply TEXT NOT NULL,
+    countUsed INTEGER NOT NULL,
+    deletedOn TEXT NOT NULL
+);
+CREATE TRIGGER IF NOT EXISTS save_chat_trigger_stats AFTER DELETE ON twitch_chat_triggers 
+BEGIN
+    INSERT INTO old_chat_triggers(triggerName, reply, countUsed, deletedOn)
+        VALUES(OLD.triggerName, OLD.reply, OLD.countUsed, date('NOW'));
+END;
+
+CREATE TABLE IF NOT EXISTS stats_messages_sent (
+    userID INTEGER PRIMARY KEY NOT NULL,
+    numMessages INTEGER NOT NULL DEFAULT 1,
+    lastSeen datetime NOT NULL DEFAULT current_timestamp
+) WITHOUT ROWID;
+
+CREATE TABLE IF NOT EXISTS stats_redeems_got (
+    userID INTEGER PRIMARY KEY NOT NULL,
+    sumTotal INTEGER NOT NULL DEFAULT 0,
+    numRedeems INTEGER NOT NULL DEFAULT 1,
+    lastSeen datetime NOT NULL DEFAULT current_timestamp
+) WITHOUT ROWID;
+
+CREATE TABLE IF NOT EXISTS stats_whispers_sent (
+    userID INTEGER PRIMARY KEY NOT NULL,
+    numMessages INTEGER NOT NULL DEFAULT 1,
+    lastSeen datetime NOT NULL DEFAULT current_timestamp
+) WITHOUT ROWID;

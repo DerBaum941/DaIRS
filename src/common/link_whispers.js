@@ -13,6 +13,7 @@ async function init(cnf, callbacks) {
         if(message.startsWith(conf.twitch.commandPrefix)) return;
 
         queueRedeem(message,user,msg.userInfo.color);
+        instances.Emitter.emit('LinkRequest', msg.userInfo.userId, message);
     });
 
     instances.Emitter.on('DiscordInteraction', async (Emitter, bot, interaction) => {

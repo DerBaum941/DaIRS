@@ -34,6 +34,8 @@ function onStreamEnd() {
     db.prepare("UPDATE twitch_redeem_streak SET streakCount = IIF(streakActive = 1, streakCount, 0)").run();
 }
 
+//Add toggleable response message
+
 function onRedeem(userID) {
     //Check if user already exists
     const result = db.prepare("SELECT * FROM twitch_redeem_streak WHERE userID = ?").get(userID);

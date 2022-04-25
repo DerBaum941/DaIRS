@@ -120,8 +120,7 @@ app.get('/auth/twitch/callback', passport.authenticate('twitch', { successRedire
 var template = handlebars.compile(`
 <html><head><title>Twitch Auth</title></head>
 <table>
-    <tr><th>Access Token</th><td>{{accessToken}}</td></tr>
-    <tr><th>Refresh Token</th><td>{{refreshToken}}</td></tr>
+    <tr><th>User ID</th><td>{{id}}</td></tr>
     <tr><th>Display Name</th><td>{{display_name}}</td></tr>
     <tr><th>Bio</th><td>{{description}}</td></tr>
     <tr><th>Image</th><td><br><img src="{{profile_image_url}}"></td></tr>
