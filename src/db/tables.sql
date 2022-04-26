@@ -16,17 +16,17 @@ CREATE TABLE IF NOT EXISTS twitch_redeem_streak (
 ) WITHOUT ROWID;
 
 CREATE TABLE IF NOT EXISTS twitch_redeem_records (
-    rowNum INTEGER PRIMARY KEY NOT NULL,
+    rowNum INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     userID INTEGER NOT NULL,
     streakCount INTEGER NOT NULL,
     achievedAt TEXT NOT NULL
 );
-CREATE TRIGGER IF NOT EXISTS save_redeem_records BEFORE UPDATE
-    ON twitch_redeem_streak
+CREATE TRIGGER IF NOT EXISTS save_redeem_records_stats
+    AFTER UPDATE ON twitch_redeem_streak
     WHEN NEW.streakCount = 0
     BEGIN
         INSERT INTO twitch_redeem_records(userID, streakCount, achievedAt)
-            VALUES(OLD.userID, OLD.streakCount, date('NOW'));
+            VALUES(OLD.userID, OLD.streakCount, date('now'));
     END;
 
 CREATE TABLE IF NOT EXISTS twitch_redeem_stats (
@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS chat_commands (
     builtFromFile INTEGER NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX IF NOT EXISTS commandIdx ON chat_commands(commandName);
+CREATE INDEX IF NOT EXISTS contentIdx ON chat_commands(content);
 
 CREATE TABLE IF NOT EXISTS command_alias (
     aliasID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -69,7 +70,7 @@ CREATE TABLE IF NOT EXISTS old_command_stats (
 CREATE TRIGGER IF NOT EXISTS save_command_stats AFTER DELETE ON chat_commands 
 BEGIN
     INSERT INTO old_command_stats(commandName, content, countUsed, deletedOn)
-        VALUES(OLD.commandName, IIF(OLD.content,OLD.content,''), OLD.countUsed, date('NOW'));
+        VALUES(OLD.commandName, IIF(OLD.content,OLD.content,''), OLD.countUsed, date('now'));
 END;
 
 CREATE TABLE IF NOT EXISTS twitch_chat_triggers (
@@ -88,24 +89,24 @@ CREATE TABLE IF NOT EXISTS old_chat_triggers (
 CREATE TRIGGER IF NOT EXISTS save_chat_trigger_stats AFTER DELETE ON twitch_chat_triggers 
 BEGIN
     INSERT INTO old_chat_triggers(triggerName, reply, countUsed, deletedOn)
-        VALUES(OLD.triggerName, OLD.reply, OLD.countUsed, date('NOW'));
+        VALUES(OLD.triggerName, OLD.reply, OLD.countUsed, date('now'));
 END;
 
 CREATE TABLE IF NOT EXISTS stats_messages_sent (
     userID INTEGER PRIMARY KEY NOT NULL,
     numMessages INTEGER NOT NULL DEFAULT 1,
-    lastSeen datetime NOT NULL DEFAULT current_timestamp
+    lastSeen timestamp NOT NULL DEFAULT (strftime('%s', 'now'))
 ) WITHOUT ROWID;
 
 CREATE TABLE IF NOT EXISTS stats_redeems_got (
     userID INTEGER PRIMARY KEY NOT NULL,
     sumTotal INTEGER NOT NULL DEFAULT 0,
     numRedeems INTEGER NOT NULL DEFAULT 1,
-    lastSeen datetime NOT NULL DEFAULT current_timestamp
+    lastSeen timestamp NOT NULL DEFAULT (strftime('%s', 'now'))
 ) WITHOUT ROWID;
 
 CREATE TABLE IF NOT EXISTS stats_whispers_sent (
     userID INTEGER PRIMARY KEY NOT NULL,
     numMessages INTEGER NOT NULL DEFAULT 1,
-    lastSeen datetime NOT NULL DEFAULT current_timestamp
+    lastSeen timestamp NOT NULL DEFAULT (strftime('%s', 'now'))
 ) WITHOUT ROWID;

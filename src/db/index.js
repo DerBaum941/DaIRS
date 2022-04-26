@@ -13,6 +13,8 @@ function init(conf, callbacks) {
 
     db.exec(tables_script);
 
+    c.inf("Database loaded");
+
     return new Promise(res => setTimeout(()=>{res(db)},1000));
 }
 
