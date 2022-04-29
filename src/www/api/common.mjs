@@ -1,12 +1,13 @@
-import DB from 'better-sqlite3';
-const db = DB('./src/db/sqlite.db');
+import { Instances } from '../../common/index.js';
+const db = Instances.DB.database;
 
-import streaks from '../../common/commands/streak.js';
-const leaderBoard = streaks.leaderBoard;
-const getUserInfoName = streaks.getUserInfoName;
-const getStreamer = streaks.getStreamer;
-const getUserInfoID = streaks.getUserInfoID;
-const getStreakByName = streaks.getStreakByName;
+import {leaderBoard, getStreakByName } from '../../common/commands/streak.js';
+
+import { Getters } from '../../twitch/index.js';
+
+const getUserInfoName = Getters.getUserInfoName;
+const getStreamer = Getters.getStreamer;
+const getUserInfoID = Getters.getUserInfoID;
 
 //give key value pair
 async function parseResult(result, numRows) {

@@ -12,6 +12,7 @@ Read up on all Types used in responses
         avatar, *URL: Ref to the Profile Picture Image*
         isFollow, *Bool: Whether they follow the streamer*
         followAge, *String?: How long they followed, null if not following*
+        followMS, *Number?: followAge but as time in milliseconds, null if not following*
         lastSeen, *String: ISO Date String of last time seen*
         streakCount, *String: Their current redeem streak*
         streakActive, *String: When their streak ended, or Still active*
@@ -28,7 +29,8 @@ Read up on all Types used in responses
         used, *Number: How often it was used*
         value, *String?: The reply attached to the command, or null*
         description, *String: Description of the command*
-        enabled *Number: 0 representing disabled, 1 for enabled*
+        enabled, *Number: 0 representing disabled, 1 for enabled*
+        modOnly *Number: 1 for commands only usable by mods, 0 for public*
     }
 
 ### Trigger Object
@@ -120,10 +122,10 @@ Searches through commands, retrieves all command(s) that contain :searchText in 
 
 ### User Endpoints
 
-#### **Query Route: /api/v1/commands/reply/:username**
+#### **Query Route: /api/v1/user/:username**
 
-Retrieves Profile for a Twitch User, by login name.
-Returns Status 400 if User was invalid.
+Retrieves Profile for a Twitch User, by login name.  
+Returns Status 400 if User was invalid.  
 @returns: \[Profile]
 
 ---

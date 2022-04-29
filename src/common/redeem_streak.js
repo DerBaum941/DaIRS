@@ -1,5 +1,6 @@
 var instances;
 var db;
+var sendMessage = true;
 
 async function init(conf, callbacks) {
     instances = callbacks;
@@ -11,10 +12,17 @@ async function init(conf, callbacks) {
     //    if (channel != "DaishuTV") return;
     //});
 
+    instances.Emitter.on('StreakToggle', (enable) => {
+        sendMessage = enable;
+    });
+
     instances.Emitter.on('TwitchRedeem', (Emitter, Clients, Message)=> {
         //This is a Workaround because fuck eventsubs
         if (Message.rewardId == conf.redeem_streak_reward_id) {
             onRedeem(Message.userId);
+            if (!sendMessage) return;
+
+
             return;
         }
         if (Message.rewardId == conf.stream_start_redeem) {

@@ -3,9 +3,7 @@ const c = require('./logman.js');
 var instances = {};
 instances.Emitter = require('./event.js').Emitter;
 instances.DB = require('./../db/index.js');
-instances.WWW = require('./../www/index.js');
 instances.Twitch = require('./../twitch/index.js');
-instances.Discord = require('./../discord/index.js');
 
 async function init(conf) {
 
@@ -16,16 +14,19 @@ async function init(conf) {
     //Initialize Database
     await instances.DB.init(conf.db, instances);
     //Initialize Websocket
-    await instances.WWW.init(conf.www, instances);
+    instances.WWW = await import('../www/index.mjs');
+    await instances.WWW.default.init(conf.www, instances);
     
     //Initialize Twitch
     await instances.Twitch.init(conf.twitch, instances);
     
     //Initialize Discord
+    instances.Discord = require('./../discord/index.js');
     await instances.Discord.init(conf.discord, instances);
     //Initialize Twitter
     //instances.Twitter = require('./../twitter/index.js');
     //await instances.Twitter.init(conf.twitter, instances);
+    await aBit();
 
     /*
      *  Additional Modules & Functionality
@@ -39,7 +40,7 @@ async function init(conf) {
     instances.linkWhispers = require('./link_whispers.js');
     instances.linkWhispers.init(conf, instances);
 
-    instances.statAPI = require('../www/api/index.mjs');
+    instances.statAPI = await import('../www/api/index.mjs');
     
    c.inf("Completed initialization of "+conf.project_name);
 }
@@ -47,4 +48,4 @@ async function init(conf) {
 exports.Init = init;
 exports.Instances = instances;
 
-async function aBit() {return new Promise(res=>setTimeout(res,500));}
+async function aBit() {return new Promise(res=>setTimeout(res,1000));}

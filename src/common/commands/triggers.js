@@ -55,6 +55,7 @@ class TriggerHandle {
         })
     }
 
+    #increment = db.prepare("UPDATE twitch_chat_triggers SET countUsed = countUsed + 1 WHERE triggerName = ?");
     //Twitch event
     onMessage(channel, user, message) {
         if (!channel) return;
@@ -62,6 +63,7 @@ class TriggerHandle {
         const trig = this.triggers[message];
         if (!trig) return;
 
+        this.#increment(message);
         twit.sendToStream(trig);
     }
     

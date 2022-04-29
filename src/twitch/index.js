@@ -232,6 +232,52 @@ function newAuthCallback(data) {
 
 
 /*
+*   Caching requests
+*/
+
+const cache_ttl = 600 //Time in seconds; 300 = 5 Minutes
+
+var userIDCache = [], userNameCache = [];
+const getUserInfoID = async (ID) => {
+    const cache = userIDCache[ID];
+    if (cache) return cache;
+
+        const usr = await apiClient.users.getUserById(ID);
+        userIDCache[ID] = usr;
+        userNameCache[usr.name] = usr;
+
+        //Delete after end of ttl
+        setTimeout(()=> {
+            delete userNameCache[usr.name];
+            delete userIDCache[ID];
+        },cache_ttl*1000);
+        return usr;
+}
+const getUserInfoName = async (name) => {
+    if (!name) return null;
+    name = name.toLowerCase();
+    const cache = userNameCache[name];
+    if (cache) return cache;
+
+        const usr = await apiClient.users.getUserByName(name);
+        userNameCache[name] = usr;
+        userIDCache[usr.id] = usr;
+
+        //Delete after end of ttl
+        setTimeout(()=> {
+            delete userNameCache[name];
+            delete userIDCache[usr.id];
+        },cache_ttl*1000);
+        return usr;
+}
+const getStreamer = async () => {
+    const usr = await getUserInfoName(channel);
+    return usr;
+}
+
+exports.Getters = {getStreamer, getUserInfoID, getUserInfoName};
+
+/*
  *  Aux Functions
  */
 

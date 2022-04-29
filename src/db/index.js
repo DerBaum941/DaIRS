@@ -8,14 +8,14 @@ var instances;
 const tables_script = fs.readFileSync(__dirname+"\\tables.sql",'utf-8');
 const create_script = fs.readFileSync(__dirname+"\\create.sql",'utf-8');
 
-function init(conf, callbacks) {
+function init(callbacks) {
     instances = callbacks;
 
     db.exec(tables_script);
 
-    c.inf("Database loaded");
-
-    return new Promise(res => setTimeout(()=>{res(db)},1000));
+    return new Promise(res => setTimeout(()=>{
+        c.inf("Database loaded");
+        res();},1000));
 }
 
 

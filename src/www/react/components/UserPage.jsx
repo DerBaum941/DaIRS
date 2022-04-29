@@ -8,8 +8,6 @@ const UserPage = (props) => {
       Display Name: {props.display_name} <br />
       Bio: {props.description} <br /> 
       Image: <img src={props.profile_image_url} /> <br />
-      
-      <img `profile_image_url` />
     </div>
 
   )

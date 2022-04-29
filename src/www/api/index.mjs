@@ -1,19 +1,15 @@
 import Express from 'express';
-import c from '../../common/logman.js';
+import {Router} from 'express';
 import routesV1 from './v1/index.mjs';
-const app = new Express();
+const router = Router();
 
-const apiPort = 8080;
+router.use(Express.json());
+router.use(Express.urlencoded({ extended: true}));
 
+router.use('/v1/user', routesV1.user);
+router.use('/v1/stats', routesV1.stats);
+router.use('/v1/commands', routesV1.commands);
 
-app.use(Express.json());
-app.use(Express.urlencoded({ extended: true}));
-app.use((req, res, done) => {
-    //Do something, count requests 
-});
-
-app.get('/api/v1/user', routesV1.user);
-app.get('/api/v1/stats', routesV1.stats);
-app.get('/api/v1/commands', routesV1.commands);
-
-app.listen(apiPort, () => c.inf("Stats API running on Port "+apiPort));
+export default {
+    v1: router
+};

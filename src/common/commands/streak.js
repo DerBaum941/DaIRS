@@ -18,9 +18,7 @@ const data = {
 }
 exports.data = data;
 
-var api, channel;
-
-const cache_ttl = 600 //Time in seconds; 300 = 5 Minutes
+var api;
 
 /**
  * Discord slash command specific callback values
@@ -31,7 +29,6 @@ const cache_ttl = 600 //Time in seconds; 300 = 5 Minutes
  */
  exports.discordCallback = async (Emitter, Clients, interaction) => {
     api = Clients.twitch.api;
-    channel = Clients.twitch.channel;
 
     const username = interaction.options.get("user")?.value;
 
@@ -93,7 +90,6 @@ const cache_ttl = 600 //Time in seconds; 300 = 5 Minutes
 exports.twitchCallback = async (Emitter, Clients, ch, chatPerson, choice, args, msgObj) => {
     if(!ch) return;
     api = Clients.twitch.api;
-    channel = Clients.twitch.channel;
 
     const nameRe = /^@?(?<usr>\w+) */gi
     const user = nameRe.exec(args);
@@ -134,51 +130,13 @@ exports.twitchCallback = async (Emitter, Clients, ch, chatPerson, choice, args, 
     Clients.twitch.chat.say(ch, text, {replyTo: msgObj});
 }
 
-/*
-*   Caching requests
-*/
-var userIDCache = [], userNameCache = [];
-const getUserInfoID = async (ID) => {
-    const cache = userIDCache[ID];
-    if (cache) return cache;
 
-        const usr = await api.users.getUserById(ID);
-        userIDCache[ID] = usr;
-        userNameCache[usr.name] = usr;
-
-        //Delete after end of ttl
-        setTimeout(()=> {
-            delete userNameCache[usr.name];
-            delete userIDCache[ID];
-        },cache_ttl*1000);
-        return usr;
-}
-const getUserInfoName = async (name) => {
-    if (!name) return null;
-    name = name.toLowerCase();
-    const cache = userNameCache[name];
-    if (cache) return cache;
-
-        const usr = await api.users.getUserByName(name);
-        userNameCache[name] = usr;
-        userIDCache[usr.id] = usr;
-
-        //Delete after end of ttl
-        setTimeout(()=> {
-            delete userNameCache[name];
-            delete userIDCache[usr.id];
-        },cache_ttl*1000);
-        return usr;
-}
-const getStreamer = async () => {
-    const usr = await getUserInfoName(channel);
-    return usr;
-}
+const { Getters } = require('../../twitch/index.js');
 
 
 const getStats = db.prepare("SELECT streakCount, streakActive FROM twitch_redeem_streak WHERE userID = ?");
 async function getStreakByName(name) {
-    const usr = await getUserInfoName(name);
+    const usr = await Getters.getUserInfoName(name);
     if (!usr) return null;
     const row = getStats.get(usr.id);
 
@@ -197,7 +155,7 @@ async function leaderBoard(numRows) {
     var LB = [];
     for(let i = 0; i < table.length; i++) {
         let row = table[i];
-        const user = await getUserInfoID(row.userID);
+        const user = await Getters.getUserInfoID(row.userID);
         LB.push({
             name: user.displayName,
             streak: row.streakCount,
@@ -212,7 +170,4 @@ async function leaderBoard(numRows) {
 }
 
 exports.leaderBoard = leaderBoard;
-exports.getUserInfoName = getUserInfoName;
-exports.getStreamer = getStreamer;
-exports.getUserInfoID = getUserInfoID;
 exports.getStreakByName = getStreakByName;

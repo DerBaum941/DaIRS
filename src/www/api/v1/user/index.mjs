@@ -4,9 +4,9 @@ import moment from 'moment';
 
 const router = Router();
 
-const msgInfo = cm.db.prepare("SELECT numMessages, lastSeen FROM stats_messages_sent WHERE userID = ?").pluck().get;
-const redeemInfo = cm.db.prepare("SELECT sumTotal, numRedeems FROM stats_redeems_got WHERE userID = ?").pluck().get;
-const linkInfo = cm.db.prepare("SELECT numMessages FROM stats_whispers_sent WHERE userID = ?").pluck().get;
+const msgInfo = cm.db.prepare("SELECT numMessages, lastSeen FROM stats_messages_sent WHERE userID = ?").pluck();
+const redeemInfo = cm.db.prepare("SELECT sumTotal, numRedeems FROM stats_redeems_got WHERE userID = ?").pluck();
+const linkInfo = cm.db.prepare("SELECT numMessages FROM stats_whispers_sent WHERE userID = ?").pluck();
 
 async function getUser(name) {
     const user = await cm.getUserInfoName(name);
@@ -17,22 +17,26 @@ async function getUser(name) {
     const streamer = await cm.getStreamer();
     const follow = await user.getFollowTo(streamer);
     var followAge = null;
-    if (follow) 
-        followAge = moment(follow.followDate.getTime()).fromNow(true);
+    var followMS = null;
+    if (follow) {
+      followAge = moment(follow.followDate.getTime()).fromNow(true);
+      followMS = new Date.getTime() - follow.followDate.getTime();
+    }
+    
 
     const streakInfo = await cm.getStreakByName(name);
     const streakCount = streakInfo ? streakInfo.streak : null;
     const streakActive = streakInfo ? streakInfo.active : null;
 
-    const msgData = msgInfo(id);
+    const msgData = msgInfo.get(id);
     const msgSent = msgData ? msgData.numMessages : 0;
     const lastSeen = msgData ? new Date(msgData.lastSeen).toJSON() : null;
 
-    const pointsData = redeemInfo(id);
+    const pointsData = redeemInfo.get(id);
     const pointsSpent = pointsData ? pointsData.sumTotal : 0;
     const redeemsGot = pointsData ? pointsData.numRedeems : 0;
 
-    const linkData = linkInfo(id);
+    const linkData = linkInfo.get(id);
     const linksRequested = linkData ? linkData.numMessages : 0;
 
     const profile = {
@@ -41,6 +45,7 @@ async function getUser(name) {
         avatar: user.profilePictureUrl,
         isFollow: follow ? true : false,
         followAge,
+        followMS,
         lastSeen,
         streakCount,
         streakActive,
@@ -53,10 +58,6 @@ async function getUser(name) {
 }
 
 router.get('/:username', async (req, res) => {
-  if (!req.params.username) {
-    req.body.message = new Error('Provide a twitch username at /api/v1/user/:username');
-    return res.status(400).send(req.body);
-  }
   const profile = await getUser(req.params.username);
   if (!profile) {
     req.body.message = new Error(req.params.username + ' could not be found');

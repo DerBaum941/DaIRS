@@ -47,7 +47,7 @@ class CommandHandler {
 
         try {
             this.#registerEvents(modules.Emitter, modules.Discord, modules.Twitch);
-            this.#registerCommandsToDiscord(modules.Discord.bot);
+            setTimeout(()=> this.#registerCommandsToDiscord(modules.Discord.bot), 2300);
         } catch {
             throw 'You must first load this module with valid initalizers';
         }

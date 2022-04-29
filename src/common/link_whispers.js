@@ -5,11 +5,18 @@ const https = require('https');
 
 
 var instances, conf;
+var allowRequests = true;
+
 async function init(cnf, callbacks) {
     instances = callbacks;
     conf = cnf;
 
+    instances.Emitter.on('LinkToggle', (enable) => {
+        allowRequests = enable;
+    });
+
     instances.Emitter.on('TwitchWhisper', async (Emitter, clients, user, message, msg) => {
+        if (!allowRequests) return;
         if(message.startsWith(conf.twitch.commandPrefix)) return;
 
         queueRedeem(message,user,msg.userInfo.color);

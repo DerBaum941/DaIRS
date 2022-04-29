@@ -50,13 +50,14 @@ const USER_SCOPE       = DEFAULT_SCOPE;
 // Initialize Express and middlewares
 var app = express();
 
- init = (callbackero) => {
+async function init (callbackero) {
     instances = callbackero;
-    return new Promise(res => setTimeout(res,500));
+    return new Promise(res => setTimeout(res,100));
 }
+exports.init = init;
 
 app.use(session({secret: SESSION_SECRET, resave: false, saveUninitialized: false}));
-app.use(express.static('public'));
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -149,5 +150,3 @@ app.get('/auth/twitch/success', (req, res) => {
 app.listen(3000, () => {
   c.inf('Twitch auth @ 3000!');
 });
-
-exports.init = init;
