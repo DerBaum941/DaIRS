@@ -61,12 +61,20 @@ class TriggerHandle {
         if (!channel) return;
         
         const trig = this.triggers[message];
-        if (!trig) return;
+        if (trig) {
+            this.#increment(message);
+            twit.sendToStream(trig);
+            return;
+        }
 
-        this.#increment(message);
-        twit.sendToStream(trig);
+        for (const [k,v] of Object.entries(this.triggers)) {
+            if (message.startsWith(k)) {
+                this.#increment(message);
+                twit.sendToStream(v);
+                return;
+            }
+        }
     }
-    
 }
 
 const handler = TriggerHandle.get();

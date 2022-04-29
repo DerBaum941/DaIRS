@@ -5,6 +5,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./components/Home";
 import Stats from "./components/Stats";
+import Profile from "./components/stats/Profile"
 
 import './styles/App.scss'
 
@@ -19,8 +20,10 @@ export default () => (
           {/* Child routes are inside the stats component  */}
           <Route path = "/stats/*" element = {<Stats />} /> 
 
+          <Route path = "/profile/:username" element = {<Profile />} />
+
           {/* Default route that redirects back to root */}
-          <Route path="*" element = {<Navigate to ="/" replace />} />
+          {/* <Route path="*" element = {<Navigate to ="/" replace />} /> */}
         </Routes>
         <Footer />
     </BrowserRouter>

@@ -38,7 +38,7 @@ var api;
 
         //If theres nothing, fail
         if (!record) {
-            interaction.reply(`Couldn't find a record for ${username}`);
+            interaction.reply({content: `Couldn't find a record for ${username}`, ephemeral: true});
             return;
         }
 
@@ -51,7 +51,8 @@ var api;
     else {
         const lb = await leaderBoard(10);
         if(lb.length == 0) {
-            interaction.reply("There are currently no streak records set.");
+            
+            interaction.reply({content: "There are currently no streak records set.", ephemeral: true});
             return;
         }
         
@@ -168,6 +169,4 @@ async function leaderBoard(numRows) {
 
     return LB;
 }
-
-exports.leaderBoard = leaderBoard;
 exports.getStreakByName = getStreakByName;

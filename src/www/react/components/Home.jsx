@@ -3,10 +3,10 @@ import '../styles/Home.scss'
 
 const Home = () => {
   return (
-    <div className="Home Main">
-      Welcome to the humble DaIRS abode. Here you can see stats. <br />
+    <main className="Home">
+      Welcome to the humble DaIRS abode. Here you can see stats, enabled commands for the bot, and other shit <br />
       Also please make this pretty.
-    </div>
+    </main>
   )
 }
 

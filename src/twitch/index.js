@@ -136,7 +136,7 @@ function initChatClient() {
         });
     }
 
-    chatClient = new ChatClient({authProvider: authProvider, channels:authorizedChannels, requestMembershipEvents: true, isAlwaysMod: true});
+    chatClient = new ChatClient({authProvider: authProvider, channels:[channel], requestMembershipEvents: true, isAlwaysMod: true});
 
     chatClient.isMod = (username) => {
         return mods.includes(username);
@@ -192,7 +192,7 @@ exports.isStreamLive = isStreamLive;
  */
 
 async function registerCallback() {
-    c.debug(`Connecting to channels ${authorizedChannels.toString()}`);
+    c.debug(`Connecting to channels ${channel}`);
     c.inf("Connected to Twitch Chat as " + chatClient.currentNick);
 }
 
@@ -235,7 +235,7 @@ function newAuthCallback(data) {
 *   Caching requests
 */
 
-const cache_ttl = 600 //Time in seconds; 300 = 5 Minutes
+const cache_ttl = 180 //Time in seconds; 300 = 5 Minutes
 
 var userIDCache = [], userNameCache = [];
 const getUserInfoID = async (ID) => {
@@ -243,6 +243,7 @@ const getUserInfoID = async (ID) => {
     if (cache) return cache;
 
         const usr = await apiClient.users.getUserById(ID);
+        if (!usr) return null;
         userIDCache[ID] = usr;
         userNameCache[usr.name] = usr;
 
@@ -260,6 +261,7 @@ const getUserInfoName = async (name) => {
     if (cache) return cache;
 
         const usr = await apiClient.users.getUserByName(name);
+        if (!usr) return null;
         userNameCache[name] = usr;
         userIDCache[usr.id] = usr;
 

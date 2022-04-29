@@ -4,9 +4,9 @@ import moment from 'moment';
 
 const router = Router();
 
-const msgInfo = cm.db.prepare("SELECT numMessages, lastSeen FROM stats_messages_sent WHERE userID = ?").pluck();
-const redeemInfo = cm.db.prepare("SELECT sumTotal, numRedeems FROM stats_redeems_got WHERE userID = ?").pluck();
-const linkInfo = cm.db.prepare("SELECT numMessages FROM stats_whispers_sent WHERE userID = ?").pluck();
+const msgInfo = cm.db.prepare("SELECT numMessages, lastSeen FROM stats_messages_sent WHERE userID = ?");
+const redeemInfo = cm.db.prepare("SELECT sumTotal, numRedeems FROM stats_redeems_got WHERE userID = ?");
+const linkInfo = cm.db.prepare("SELECT numMessages FROM stats_whispers_sent WHERE userID = ?");
 
 async function getUser(name) {
     const user = await cm.getUserInfoName(name);
@@ -20,7 +20,7 @@ async function getUser(name) {
     var followMS = null;
     if (follow) {
       followAge = moment(follow.followDate.getTime()).fromNow(true);
-      followMS = new Date.getTime() - follow.followDate.getTime();
+      followMS = new Date().getTime() - follow.followDate.getTime();
     }
     
 

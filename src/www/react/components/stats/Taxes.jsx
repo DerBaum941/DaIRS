@@ -1,9 +1,10 @@
 import React from "react"
 import axios from "axios"
+import { Link } from "react-router-dom"
 import '../../styles/Leaderboard.scss'
 
 
-class TaxLeaderboard extends React.Component {
+class Taxes extends React.Component {
 
   state = {
     data: [],
@@ -31,16 +32,15 @@ class TaxLeaderboard extends React.Component {
         </div>
         {this.state.data.map((entry, index) => (
           <div key={index} className="Taxes LeaderboardRow">
-            <div>{entry.name}</div>
+            <Link to={`/profile/${entry.name}`}> {entry.name} </Link>
             <div>{entry.value}</div>
             <div>{entry.active}</div>
           </div>
         ))}
-
         {this.state.connected ? "" : "Couldn't fucking get stuff"}
       </div>
     )
   }
 }
 
-export default TaxLeaderboard
+export default Taxes

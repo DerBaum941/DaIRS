@@ -1,7 +1,7 @@
 import { Instances } from '../../common/index.js';
 const db = Instances.DB.database;
 
-import {leaderBoard, getStreakByName } from '../../common/commands/streak.js';
+import {getStreakByName } from '../../common/commands/streak.js';
 
 import { Getters } from '../../twitch/index.js';
 
@@ -28,8 +28,8 @@ async function parseResult(result, numRows) {
 
     return lb;
 }
-async function topStreaks(numRows) {
-    const top = await leaderBoard(numRows);
+async function topStreaks(page, page_size) {
+    const top = await leaderBoard(page, page_size);
     var lb = [];
     if (!top || top.length == 0) return lb;
     top.forEach(row => {
@@ -41,6 +41,41 @@ async function topStreaks(numRows) {
     });
     lb.sort((a,b)=> b.value-a.value);
     return lb;
+}
+
+const getBest = db.prepare("SELECT userID, streakCount, achievedAt FROM twitch_redeem_records ORDER BY streakCount DESC");
+const getTop = db.prepare("SELECT userID, streakCount FROM twitch_redeem_streak ORDER BY streakCount DESC");
+
+var tableCache = null;
+const cache_ttl = 180; //Cache lifetime in seconds
+function getLB_Table()  {
+    if (!tableCache) {
+        var r1 = getTop.all();
+        var r2 = getBest.all();
+        tableCache = [...r1, ...r2].sort((a,b)=>b.streakCount-a.streakCount);
+        setTimeout(()=>{tableCache = null;},cache_ttl*1000)
+    }
+    return tableCache;
+}
+
+async function leaderBoard(page, page_size) {
+    const table = getLB_Table();
+    if (!table || table.length==0) return null;
+    var LB = [];
+    const length = Math.min(table.length, page*page_size);
+    let i = Math.min(table.length, (page-1)*page_size);
+    for(; i < length; i++) {
+        let row = table[i];
+        const user = await Getters.getUserInfoID(row.userID);
+        LB.push({
+            name: user.displayName,
+            streak: row.streakCount,
+            achieved: row.achievedAt ? row.achievedAt : "Still active"
+        });
+    }
+    LB.sort((a,b)=> b.streak-a.streak);
+
+    return LB;
 }
 
 export default {

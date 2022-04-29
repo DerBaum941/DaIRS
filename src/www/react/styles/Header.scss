@@ -1,5 +1,28 @@
-.Header {
+@import './Variables';
+
+header {
   display: flex;
   justify-content: center;
   align-items: center;
+
+  height: 50px;
+
+  z-index: 999;
+
+  // margin: 10px 15px;
+
+  -webkit-box-shadow: 1px 1px 5px 2px rgba(0,0,0,0.75);
+  -moz-box-shadow: 1px 1px 5px 2px rgba(0,0,0,0.75);
+  box-shadow: 1px 1px 5px 2px rgba(0,0,0,0.75);
+
+  .NavButtons {
+    * {
+      border-top: 1px solid $secondary;
+      padding-right: 40px;
+      margin: 0px 20px;
+      &:hover {
+        border-top-color: $highlight;
+     }
+    }
+ }
 }

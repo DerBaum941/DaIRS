@@ -60,8 +60,9 @@ Read up on all Types used in responses
 
 ### Stats Endpoints
 
-All of the following stats endpoints may be trailed with a limit of rows to fetch e.g. [...]**/50**  
-Defaults to 20 Rows;
+All of the following stats endpoints may be trailed with a page number e.g. [...]**/2**  
+A page **always** contains 20 Rows, the count starts at 1  
+Fetching an "Out of bounds" Page will return an empty array  
 
 #### **List Route: Streak Stats /api/v1/stats/streak/**
 Gives a Leaderboard of the longest Streaks (ALL TIME)  
