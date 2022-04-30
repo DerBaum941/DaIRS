@@ -1,6 +1,8 @@
 import React from "react"
 import axios from "axios"
 import { useParams } from "react-router-dom"
+import UserCard from "./UserCard"
+
 import '../../styles/Leaderboard.scss'
 
 // Wrapper function component so url params can be parsed
@@ -36,8 +38,17 @@ class Profile extends React.Component {
 
   render() {
     return (
-      <main className="Profile"> 
-        {JSON.stringify(this.state.data)}
+      <main className="Profile">
+        <p>
+          Hello, below you can find all of the relevant stats for the channel.
+        </p>
+        {/* <p>
+          {JSON.stringify(this.state.data)}
+        </p> */}
+
+        <div className="UserCards">
+          <UserCard data={this.state.data} />
+        </div>
       </main>
     )
   }

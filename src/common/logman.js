@@ -4,7 +4,6 @@ const fs = require('fs');
 const conf = require('./../../conf/general.json').logs;
 const logpath = path.normalize(__dirname+'./../../logs/');
 
-const { format } = require('util');
 const process = require('process');
 
 /*

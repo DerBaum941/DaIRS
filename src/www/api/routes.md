@@ -13,9 +13,10 @@ Read up on all Types used in responses
         isFollow, *Bool: Whether they follow the streamer*
         followAge, *String?: How long they followed, null if not following*
         followMS, *Number?: followAge but as time in milliseconds, null if not following*
-        lastSeen, *String: ISO Date String of last time seen*
-        streakCount, *String: Their current redeem streak*
-        streakActive, *String: When their streak ended, or Still active*
+        lastSeen, *String?: ISO Date String of last time seen*
+        streakCount, *Number?: Their current redeem streak*
+        streakActive, *String?: When their streak ended, or Still active*
+        totalRedeems, *Number?: Total number of times they got the Streak Reedeem*
         msgSent, *Number: How many messages the User sent*
         pointsSpent, *Number: How many Points the User spent*
         redeemsGot, *Number: How many Redeems they received*
@@ -39,6 +40,15 @@ Read up on all Types used in responses
         name, *String: Trigger message*
         value, *String: Reply to send*
         used *Number: How often it was triggered*
+    }
+
+### Redeem Object
+
+    json: {
+        name, *String: Title of the redeem*
+        value, *Number: Sum Total points spent on it*
+        used, *Number: How often it was received*
+        lastUsed *String: DateTime it was last received*
     }
 
 ### Leaderboard Row Object
@@ -79,6 +89,11 @@ Retrieves a sorted array of the most used Commands
 
 Retrieves a sorted array of the most ran Triggers  
 @returns: \[Trigger]
+
+#### **List Route: Redeem Usage Stats /api/v1/stats/redeemuse/**
+
+Retrieves a sorted array of all channel redeems, by amount of points spent  
+@returns: \[Redeem]
 
 #### **List Route: Redeems Stats /api/v1/stats/redeems/**
 

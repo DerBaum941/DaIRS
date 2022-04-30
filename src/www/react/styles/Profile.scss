@@ -1,0 +1,80 @@
+@import "./Variables";
+
+.Profile {
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  flex-direction: column;
+  max-width: 100%;
+  width: 100%;
+  p {
+    font-size: 2vw;
+    word-break: break-all;
+  }
+}
+
+.UserCards {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.UserCard {
+  -webkit-box-shadow: $shadow;
+  -moz-box-shadow: $shadow;
+  box-shadow: $shadow;
+  
+  background-color: $secondary;
+
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  padding: 0px 20px;
+  padding: 30px;
+  transition: opacity 1s ease-in-out;
+
+  .UserCardHeader, .UserCardBody {
+    padding: 10px 0px;
+  }
+}
+
+.Hide {
+  opacity: 0;
+}
+
+.UserCardHeader {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  border-bottom: 1px solid $primary;
+
+  img {
+    border-radius: 50%;
+    width: 6vw;
+    max-width: 250px;
+  }
+
+  p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-left: 10px;
+    font-size: 2.5vw;
+  }
+}
+
+.UserCardBody {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  p {
+    letter-spacing: 1px;
+    padding: 0px;
+    margin: 5px;
+    font-size: 1.25vw;
+  }
+}

@@ -52,7 +52,7 @@ class CommandHandler {
             throw 'You must first load this module with valid initalizers';
         }
 
-        //this.#resetAllDiscordCommands();
+        //this.resetAllDiscordCommands();
 
         this.#pruneDatabase();
         //Say something impressive
@@ -468,14 +468,15 @@ class CommandHandler {
             applicationCommand.delete();
         });
     }
-    #resetAllDiscordCommands = () => {};
+    resetAllDiscordCommands = () => {};
     #registerCommandsToDiscord(DiscordClient) {
-        this.#resetAllDiscordCommands = () => {
+        this.resetAllDiscordCommands = () => {
             DiscordClient.application.commands.set([]);
             DiscordClient.guilds.cache.forEach(guild => {
                 DiscordClient.application.commands.set([],guild.id);
             });
             this.#registerCommandsToDiscord(DiscordClient);
+            c.inf(`Updated all Command Entries on Discord`);
         }
         this.#registerDiscordCommand = function (cmd) {
             this.#registerDiscordCommandLogic(cmd,DiscordClient);
@@ -613,7 +614,7 @@ class CommandHandler {
         });
         if (deletedEntries>0) {
             c.warn(`Deleted ${deletedEntries} unused commands from the Database`);
-            this.#resetAllDiscordCommands();
+            this.resetAllDiscordCommands();
         }
     }
 

@@ -31,8 +31,10 @@ CREATE TRIGGER IF NOT EXISTS save_redeem_records_stats
 
 CREATE TABLE IF NOT EXISTS twitch_redeem_stats (
     rewardID TEXT PRIMARY KEY NOT NULL,
+    rewardName TEXT NOT NULL,
     redeemCount INTEGER NOT NULL DEFAULT 0,
-    totalPoints INTEGER NOT NULL DEFAULT 0
+    totalPoints INTEGER NOT NULL DEFAULT 0,
+    lastUsed TEXT NOT NULL
 ) WITHOUT ROWID;
 
 CREATE TABLE IF NOT EXISTS chat_commands (

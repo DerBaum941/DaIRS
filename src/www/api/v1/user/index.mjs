@@ -7,6 +7,15 @@ const router = Router();
 const msgInfo = cm.db.prepare("SELECT numMessages, lastSeen FROM stats_messages_sent WHERE userID = ?");
 const redeemInfo = cm.db.prepare("SELECT sumTotal, numRedeems FROM stats_redeems_got WHERE userID = ?");
 const linkInfo = cm.db.prepare("SELECT numMessages FROM stats_whispers_sent WHERE userID = ?");
+const getActive = cm.db.prepare("SELECT streakCount FROM twitch_redeem_streak WHERE userID = ?").pluck();
+const getHistory = cm.db.prepare("SELECT streakCount FROM twitch_redeem_records WHERE userID = ?").pluck();
+
+function getUserTaxID(id) {
+    var counts = getHistory.all(id);
+    counts.push(getActive.get(id));
+    const sum = counts.reduce((partial, a)=>partial + a,0);
+    return sum;
+}
 
 async function getUser(name) {
     const user = await cm.getUserInfoName(name);
@@ -27,6 +36,7 @@ async function getUser(name) {
     const streakInfo = await cm.getStreakByName(name);
     const streakCount = streakInfo ? streakInfo.streak : null;
     const streakActive = streakInfo ? streakInfo.active : null;
+    const totalRedeems = streakInfo ? getUserTaxID(id) : null;
 
     const msgData = msgInfo.get(id);
     const msgSent = msgData ? msgData.numMessages : 0;
@@ -49,6 +59,7 @@ async function getUser(name) {
         lastSeen,
         streakCount,
         streakActive,
+        totalRedeems, //This naming for total taxes per person is ambiguous with redeemsGot
         msgSent,
         pointsSpent,
         redeemsGot,
@@ -60,7 +71,7 @@ async function getUser(name) {
 router.get('/:username', async (req, res) => {
   const profile = await getUser(req.params.username);
   if (!profile) {
-    req.body.message = new Error(req.params.username + ' could not be found');
+    req.body.message = new Error(req.params.username + ' could not be found').toString();
     return res.status(400).send(req.body);
   }
   return res.status(200).json(profile);

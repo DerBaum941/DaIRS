@@ -65,19 +65,15 @@ exports.twitchCallback = async (Emitter, Clients, ch, user, choice, args, msgObj
     Clients.twitch.chat.say(ch, `@${user} has been following for ${age}`, {replyTo: msgObj});
 }
 
-var getUser;
+const {Getters} = require('../../twitch/index.js');
 async function getFollowAge(username) {
-    if (!getUser) {
-        getUser = await import('../../www/api/common.mjs');
-        getUser = cm.default.getUser;
-    }
     if (!username) return null;
 
-    const user = await cm.getUserInfoName(username);
+    const user = await Getters.getUserInfoName(username);
     if (!user) return null;
 
     //FollowAge
-    const streamer = await cm.getStreamer();
+    const streamer = await Getters.getStreamer();
     if (user === streamer) 
         return new Date().getTime() - streamer.creationDate;
     

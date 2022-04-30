@@ -4,29 +4,33 @@
 
 * {
   // border: 1px solid white; //debug
-  // padding: 1px; // debug
   box-sizing: border-box;
   font-family: Lato;
+  padding: 2px
+
 }
 
-html, body, #root, .App, .Home {
+html, body, #root, .App {
   height: 100%;
-  background-color: $primary;
-  color: $highlight
-}
+  margin: 0px;
 
+  background-color: $primary;
+  color: #F9EBE0;
+  // color: $highlight;
+
+}
 .App {
   display: flex;
   flex-direction: column;
+  padding: 10px;
 }
 
 a {
   text-decoration: none;
-  color: $highlight;
 
-  &:visited {
-    color: $highlight;
-  }  
+  &:visited, &:link, &:active {
+    color: inherit;
+  }
 }
 
 main {

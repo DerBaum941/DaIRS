@@ -242,7 +242,12 @@ const getUserInfoID = async (ID) => {
     const cache = userIDCache[ID];
     if (cache) return cache;
 
-        const usr = await apiClient.users.getUserById(ID);
+        var usr = null;
+        try {
+            usr = await apiClient.users.getUserById(ID);
+        } catch {
+            return null;
+        }
         if (!usr) return null;
         userIDCache[ID] = usr;
         userNameCache[usr.name] = usr;
@@ -260,7 +265,12 @@ const getUserInfoName = async (name) => {
     const cache = userNameCache[name];
     if (cache) return cache;
 
-        const usr = await apiClient.users.getUserByName(name);
+        var usr = null;
+        try {
+            usr = await apiClient.users.getUserByName(name);
+        } catch {
+            return null;
+        }
         if (!usr) return null;
         userNameCache[name] = usr;
         userIDCache[usr.id] = usr;

@@ -8,7 +8,7 @@ import Redeems from "./stats/Redeems";
 
 const Stats = () => {
   return( 
-    <main>
+    <main className="Stats">
 
       <nav className = "StatsMenu">
         <Link to="/stats">Houm</Link>

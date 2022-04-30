@@ -45,9 +45,18 @@ function topCommands(page) {
     return result;
 }
 //Top used triggers info
-const getTopTriggers = cm.db.prepare("SELECT triggerName, reply AS value, countUsed AS used FROM twitch_chat_triggers ORDER BY used DESC LIMIT ? OFFSET ?");
+const getTopTriggers = cm.db.prepare("SELECT triggerName AS name, reply AS value, countUsed AS used FROM twitch_chat_triggers ORDER BY used DESC LIMIT ? OFFSET ?");
 function topTriggers(page) {
     const result = getTopTriggers.all(PAGE_SIZE, (page-1)*PAGE_SIZE);
+    if (result.length == 0)
+      return [];
+    //lb.sort((a,b)=> b.used-a.used );
+    return result;
+}
+//Top used point redeems info
+const getTopPointRedeems = cm.db.prepare("SELECT rewardName AS name, totalPoints AS value, redeemCount AS used, lastUsed FROM twitch_redeem_stats ORDER BY value DESC LIMIT ? OFFSET ?");
+function redeemsUsed(page) {
+    const result = getTopPointRedeems.all(PAGE_SIZE, (page-1)*PAGE_SIZE);
     if (result.length == 0)
       return [];
     //lb.sort((a,b)=> b.used-a.used );
@@ -88,6 +97,11 @@ router.get('/commands/:page?', (req, res) => {
     const page = req.params.page || 1;
     const lb = topCommands(page);
     return res.status(200).json(lb);
+});
+router.get('/redeemuse/:page?', (req, res) => {
+  const page = req.params.page || 1;
+  const lb = redeemsUsed(page);
+  return res.status(200).json(lb);
 });
 
 router.get('/', (req, res) => {

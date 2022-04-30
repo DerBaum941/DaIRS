@@ -18,8 +18,6 @@ const data = {
 }
 exports.data = data;
 
-var api;
-
 /**
  * Discord slash command specific callback values
  * @param {EventEmitter} Emitter The app's Event Emitter, add callbacks to other things if you want.
@@ -28,7 +26,6 @@ var api;
  * @return {void}
  */
  exports.discordCallback = async (Emitter, Clients, interaction) => {
-    api = Clients.twitch.api;
 
     const username = interaction.options.get("user")?.value;
 
@@ -90,7 +87,6 @@ var api;
  */
 exports.twitchCallback = async (Emitter, Clients, ch, chatPerson, choice, args, msgObj) => {
     if(!ch) return;
-    api = Clients.twitch.api;
 
     const nameRe = /^@?(?<usr>\w+) */gi
     const user = nameRe.exec(args);
