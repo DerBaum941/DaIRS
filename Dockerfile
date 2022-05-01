@@ -9,7 +9,6 @@ COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
 RUN npm install --production --silent
 COPY . /home/node/dairs
 
-RUN mkdir /home/node/dairs/src/db
 RUN mkdir /home/node/dairs/src/db/backups
 RUN chown -R node /home/node/dairs
 
