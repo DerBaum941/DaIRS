@@ -6,6 +6,7 @@ import https from 'https';
 import { randomBytes } from 'crypto';
 import path from 'path';
 import fs from 'fs';
+import conf from '../../../conf/general.json';
 
 //Subroutes
 //import routesV1 from './v1/index.mjs';
@@ -15,7 +16,7 @@ const router = Router();
 var TWITCH_CLIENT_ID;
 var TWITCH_SECRET;
 const SESSION_SECRET = randomBytes(64).toString('hex');
-const CALLBACK_URL = 'https://dairs.derbaum.rocks/mod/auth/twitch/callback';
+const CALLBACK_URL = conf.www.dashboard_login_uri;
 const LOGIN_SCOPE = ['chat:read'];
 
 {
