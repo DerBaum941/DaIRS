@@ -14,5 +14,4 @@ RUN chown -R node /home/node/dairs
 
 EXPOSE 9090
 USER node
-RUN npm run build
 CMD npm start
