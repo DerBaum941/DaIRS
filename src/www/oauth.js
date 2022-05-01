@@ -72,8 +72,6 @@ https.get(httpsOptions, res => {
   if (res?.statusCode != 200) done(null, null);
   res.on(('data'), (body) => {
     const data = JSON.parse(body);
-    c.debug("Got User Profile Info:")
-    c.debug(data);
     done(null, data);
   });
 });
@@ -140,7 +138,7 @@ if(req.session && req.session.passport && req.session.passport.user) {
   instances.Emitter.emit('NewTwitchAuth',data);
   res.send(template(data));
 } else {
-  c.debug("Got invalid session");
+  c.debug("[Twitch Auth] Got invalid session requested");
   res.redirect('/');
 }
 });
