@@ -2,6 +2,18 @@ version: "3.4"
 
 services:
 	dairs:
-		build: 
-			context: .
-			dockerfile: Dockerfile
+		image: ghcr.io/derbaum941/dairs:latest
+		volumes:
+			- db_data:/src/db
+			- type: bind
+				source: ./general.json
+				target: /usr/src/app/conf/general.json
+			- type: bind
+				source: ./credentials.json
+				target: /usr/src/app/conf/credentials.json
+		environment:
+		ports:
+			- 9090:9090
+
+	volumes:
+		db_data: {}

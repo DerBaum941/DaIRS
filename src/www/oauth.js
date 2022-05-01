@@ -31,30 +31,32 @@ var instances;
 var TWITCH_CLIENT_ID;
 var TWITCH_SECRET;
 const SESSION_SECRET   =  randomBytes(64).toString('hex');
-const CALLBACK_URL     = 'http://localhost:3000/auth/twitch/callback';  // You can run locally with - http://localhost:3000/auth/twitch/callback
 const DEFAULT_SCOPE    = ['chat:read',"channel:read:redemptions"]; //'channel:read:subscriptions', 'bits:read'
 const BOT_SCOPE        = ['chat:read','chat:edit','channel:moderate','whispers:read','whispers:edit', 'channel:read:redemptions', 
     'channel:read:predictions', 'channel:read:subscriptions', 'channel:read:predictions', 'channel:read:polls', 'channel:read:hype_train'];
-//const MAX_SCOPE        = 'chat:read+chat:edit+bits:read+moderation:read+channel:manage:polls+channel:manage:predictions+channel:manage:redemptions+channel:read:hype_train'+
-//                         '+channel:read:polls+channel:read:predictions+channel:read:redemptions'
 const ACTIVE_SCOPE     = BOT_SCOPE;
 const USER_SCOPE       = DEFAULT_SCOPE;
 
+
+async function init (cnf, callbackero) {
+  instances = callbackero;
+
+  const CALLBACK_URL = cnf.oauth_uri;
+
+  //const CALLBACK_URL     = 'http://localhost:3000/auth/twitch/callback';
+
+  
 {
-    const authpath = path.normalize(__dirname+'./../../conf/credentials.json');
-    const auth = JSON.parse(fs.readFileSync(authpath, 'utf8')).twitch;
-    TWITCH_CLIENT_ID = auth.clientID;
-    TWITCH_SECRET = auth.clientSecret;
+  const authpath = path.normalize(__dirname+'./../../conf/credentials.json');
+  const auth = JSON.parse(fs.readFileSync(authpath, 'utf8')).twitch;
+  TWITCH_CLIENT_ID = auth.clientID;
+  TWITCH_SECRET = auth.clientSecret;
 }
 
 // Initialize Express and middlewares
-var app = express();
+const app = express();
 
-async function init (callbackero) {
-    instances = callbackero;
-    return new Promise(res => setTimeout(res,100));
-}
-exports.init = init;
+
 
 app.use(session({secret: SESSION_SECRET, resave: false, saveUninitialized: false}));
 
@@ -65,48 +67,48 @@ app.use(passport.session());
 // Override passport profile function to get user profile from Twitch API
 OAuth2Strategy.prototype.userProfile = (accessToken, done) => {
 
-  const httpsOptions = {
-    hostname: 'api.twitch.tv',
-    path: '/helix/users',
-    port: 443,
-    headers: {
-      'Client-ID': TWITCH_CLIENT_ID,
-      'Accept': 'application/vnd.twitchtv.v5+json',
-      'Authorization': 'Bearer ' + accessToken
-    }
-  };
-  https.get(httpsOptions, res => {
-    if (res?.statusCode != 200) done(null, null);
-    res.on(('data'), (body) => {
-      done(null, JSON.parse(body));
-    });
+const httpsOptions = {
+  hostname: 'api.twitch.tv',
+  path: '/helix/users',
+  port: 443,
+  headers: {
+    'Client-ID': TWITCH_CLIENT_ID,
+    'Accept': 'application/vnd.twitchtv.v5+json',
+    'Authorization': 'Bearer ' + accessToken
+  }
+};
+https.get(httpsOptions, res => {
+  if (res?.statusCode != 200) done(null, null);
+  res.on(('data'), (body) => {
+    done(null, JSON.parse(body));
   });
+});
 }
 
 passport.serializeUser((user, done) => {
-    done(null, user);
+  done(null, user);
 });
 
 passport.deserializeUser((user, done) => {
-    done(null, user);
+  done(null, user);
 });
 
 passport.use('twitch', new OAuth2Strategy({
-    authorizationURL: 'https://id.twitch.tv/oauth2/authorize',
-    tokenURL: 'https://id.twitch.tv/oauth2/token',
-    clientID: TWITCH_CLIENT_ID,
-    clientSecret: TWITCH_SECRET,
-    callbackURL: CALLBACK_URL,
-    state: true
-  },
-  (accessToken, refreshToken, profile, done) => {
-    profile.accessToken = accessToken;
-    profile.refreshToken = refreshToken;
-    profile.data[0].accessToken = accessToken;
-    profile.data[0].refreshToken = refreshToken;
+  authorizationURL: 'https://id.twitch.tv/oauth2/authorize',
+  tokenURL: 'https://id.twitch.tv/oauth2/token',
+  clientID: TWITCH_CLIENT_ID,
+  clientSecret: TWITCH_SECRET,
+  callbackURL: CALLBACK_URL,
+  state: true
+},
+(accessToken, refreshToken, profile, done) => {
+  profile.accessToken = accessToken;
+  profile.refreshToken = refreshToken;
+  profile.data[0].accessToken = accessToken;
+  profile.data[0].refreshToken = refreshToken;
 
-    done(null, profile);
-  }
+  done(null, profile);
+}
 ));
 
 // Set route to start OAuth link, this is where you define scopes to request
@@ -121,32 +123,37 @@ app.get('/auth/twitch/callback', passport.authenticate('twitch', { successRedire
 var template = handlebars.compile(`
 <html><head><title>Twitch Auth</title></head>
 <table>
-    <tr><th>User ID</th><td>{{id}}</td></tr>
-    <tr><th>Display Name</th><td>{{display_name}}</td></tr>
-    <tr><th>Bio</th><td>{{description}}</td></tr>
-    <tr><th>Image</th><td><br><img src="{{profile_image_url}}"></td></tr>
+  <tr><th>User ID</th><td>{{id}}</td></tr>
+  <tr><th>Display Name</th><td>{{display_name}}</td></tr>
+  <tr><th>Bio</th><td>{{description}}</td></tr>
+  <tr><th>Image</th><td><br><img src="{{profile_image_url}}"></td></tr>
 </table></html>`);
 
 // If user has an authenticated session, display it, otherwise display link to authenticate
 app.get('/auth/twitch/success', (req, res) => {
-  if(req.session && req.session.passport && req.session.passport.user) {
-    const data = req.session.passport.user.data[0];
-    
-    instances.DB.upsert("twitch_auth_tokens", {
-        "userID": data.id,
-        "accessToken": data.accessToken,
-        "refreshToken": data.refreshToken,
-        "expiresIn": 0,
-        "obtainmentTimestamp": 0,
-        "scope": null
-    });
-    instances.Emitter.emit('NewTwitchAuth',data);
-    res.send(template(data));
-  } else {
-    res.redirect('/');
-  }
+if(req.session && req.session.passport && req.session.passport.user) {
+  const data = req.session.passport.user.data[0];
+  
+  instances.DB.upsert("twitch_auth_tokens", {
+      "userID": data.id,
+      "accessToken": data.accessToken,
+      "refreshToken": data.refreshToken,
+      "expiresIn": 0,
+      "obtainmentTimestamp": 0,
+      "scope": null
+  });
+  instances.Emitter.emit('NewTwitchAuth',data);
+  res.send(template(data));
+} else {
+  res.redirect('/');
+}
 });
 
-app.listen(3000, () => {
-  c.inf('Twitch auth @ 3000!');
+app.listen(cnf.oauth_port, () => {
+c.inf('Twitch auth running at '+cnf.oauth_port);
 });
+
+
+  return new Promise(res => setTimeout(res,100));
+}
+exports.init = init;

@@ -2,6 +2,8 @@ import React from "react"
 import axios from "axios"
 import { useParams } from "react-router-dom"
 import UserCard from "./UserCard"
+import conf from '../../../../../conf/general.json' 
+
 
 import '../../styles/Leaderboard.scss'
 
@@ -26,7 +28,8 @@ class Profile extends React.Component {
   }
 
   componentDidMount = () => {
-    axios.get(`http://dairs.derbaum.rocks/api/v1/user/${this.props.params.username}`)
+    
+    axios.get(`${conf.www.host}/api/v1/user/${this.props.params.username}`)
     .then((res) => {
       this.setState({data: res.data})
     })

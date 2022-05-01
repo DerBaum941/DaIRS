@@ -1,7 +1,7 @@
 import React from 'react'
 import axios from "axios"
 import '../../styles/Leaderboard.scss'
-
+import conf from '../../../../../conf/general.json' 
 
 class Redeems extends React.Component {
   
@@ -11,7 +11,7 @@ class Redeems extends React.Component {
   }
 
   componentDidMount = () => {
-    axios.get('http://dairs.derbaum.rocks/api/v1/stats/redeems/')
+    axios.get(`${conf.www.host}/api/v1/stats/redeems/`)
       .then((res) => {
         this.setState({data: res.data, connected: true})
       })

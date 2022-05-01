@@ -1,6 +1,8 @@
 import React from "react"
 import axios from "axios"
 import { Link } from "react-router-dom"
+import conf from '../../../../../conf/general.json' 
+
 import '../../styles/Leaderboard.scss'
 
 
@@ -12,7 +14,7 @@ class Taxes extends React.Component {
   }
 
   componentDidMount = () => {
-    axios.get('http://dairs.derbaum.rocks/api/v1/stats/streak/')
+    axios.get(`${conf.www.host}/api/v1/stats/streak/`)
       .then((res) => {
         this.setState({data: res.data, connected: true})
       })

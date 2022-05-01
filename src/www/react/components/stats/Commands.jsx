@@ -1,7 +1,7 @@
 import React from 'react'
 import axios from "axios"
 import '../../styles/Leaderboard.scss'
-
+import conf from '../../../../../conf/general.json' 
 
 class Commands extends React.Component {
   
@@ -11,7 +11,7 @@ class Commands extends React.Component {
   }
 
   componentDidMount = () => {
-    axios.get('http://dairs.derbaum.rocks/api/v1/stats/commands/')
+    axios.get(`${conf.www.host}/api/v1/stats/commands/`)
       .then((res) => {
 
         this.setState({data: res.data.filter( el => el.modOnly === 0), connected: true})

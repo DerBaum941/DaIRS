@@ -30,8 +30,6 @@ function month() {
     //monthly
 }
 
-
-
 function pruneOldLogs() {
     const logpath = path.normalize(__dirname+'./../../logs/');
     const date = moment().subtract(conf.retentionDays, 'days').format("YY-MM-DD");
@@ -49,7 +47,7 @@ function pruneOldLogs() {
 }
 
 function pruneDBBackups() {
-    const backups = path.resolve('./src/db/backups');
+    const backups = path.resolve('./src/db/backups')+'\\';
     const date = moment().subtract(conf.retentionDays, 'days').format("YY-MM-DD");
     const cutOffFile = date + ".db";
 
@@ -58,7 +56,7 @@ function pruneDBBackups() {
     files.sort();
     const cutOff = files.indexOf(cutOffFile);
     const deleteables = files.slice(0,cutOff);
-    c.debug("Deleting these Logfiles: " + deleteables.toString());
+    c.debug("Deleting these DB Backups: " + deleteables.toString());
     deleteables.forEach(file => {
         const path = backups + file;
         fs.unlinkSync(path);

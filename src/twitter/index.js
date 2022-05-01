@@ -17,7 +17,6 @@ var monitoredAccounts = [];
 async function init(conf, callbacks) {
     instances = callbacks;
 
-    //await followAccounts(conf.accounts);
     monitoredAccounts = conf.accounts;
 
     await createV2Stream();
@@ -26,23 +25,6 @@ async function init(conf, callbacks) {
 }
 
 exports.init = init;
-
-async function followAccounts(accounts) {
-    return new Promise(async (res,rej)=> {
-        
-        var users = await twitterClient.v2.usersByUsernames(accounts);
-        if(!users?.data) rej();
-        users = users.data;
-
-        if (!(users.length > 0)) users = [users];
-
-        users.forEach(usr => {
-            monitoredAccountIds.push(usr.id);
-
-            if (monitoredAccountIds.length === users.length) res();
-        });
-    });
-}
 
 async function createV2Stream() {
 
@@ -79,24 +61,6 @@ async function createV2Stream() {
     stream.on(twitter.ETwitterStreamEvent.Connected, () => c.inf('Monitoring Tweets'));
     
     await stream.connect({ autoReconnect: true, autoReconnectRetries: Infinity });
-
-    return new Promise(res => setTimeout(res,1000));
-}
-
-
-//---------------------------------------------------------------------------------------------------------------------
-
-//Need elevated Access. Aka, nopers :D
-async function createV1Stream() {
-    //'tweets/sample/stream'  'statuses/filter'
-    const stream = await twitterClient.v1.filterStream({ track:'JavaScript', follow: monitoredAccountIds });
-
-    // Emitted on Tweet
-    stream.on(twitter.ETwitterStreamEvent.Data, c.debug);
-
-    // Emitted only on initial connection success
-    stream.on(twitter.ETwitterStreamEvent.Connected, () => c.inf('Monitoring Tweets'));
-
 
     return new Promise(res => setTimeout(res,1000));
 }

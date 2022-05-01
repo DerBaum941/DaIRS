@@ -6,8 +6,22 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
+var callbacks;
+var conf;
+import oauthApp from './oauth.js';
+
+async function init(cnf, instance) {
+    callbacks = instance;
+    conf = cnf;
+    
+    await oauthApp.init(cnf,instance);
+
+    
+
+
+
 const app = Express();
-const webAppPort = 9090;
 const options = {
   dotfiles: 'ignore',
   extensions: ['htm', 'html'],
@@ -15,7 +29,7 @@ const options = {
 };
 
 var corsOptions = {
-  origin: 'http://dairs.derbaum.rocks/',
+  origin: cnf.host,
   optionsSuccessStatus: 200 
 };
 app.use(cors(corsOptions));
@@ -43,18 +57,10 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!')
 })
 
-app.listen(webAppPort);
+app.listen(cnf.port);
 
-var callbacks;
 
-import oauthApp from './oauth.js';
 
-async function init(conf, instance) {
-    callbacks = instance;
-    
-    await oauthApp.init(instance);
-
-    //c.inf("Websocket Online");
 
     return new Promise(res => setTimeout(res,100));
 }
