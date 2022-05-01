@@ -53,7 +53,8 @@ async function init(conf,callbacks) {
     const success = await initAuths();
     if(!success) {
         retryInter = setInterval(initAuths,5000);
-    } else {
+    } 
+    instances.Emitter.once('TwitchAllAuths',()=>{
         const worked = initChatClient();
         if(!worked) {
             retryChat = setInterval(async ()=>{
@@ -61,8 +62,7 @@ async function init(conf,callbacks) {
                 initChatClient();
             },5000);
         }
-    }
-
+    });
     return new Promise(res => {
         instances.Emitter.on('TwitchInitComplete',res);
     });
@@ -95,12 +95,10 @@ async function initAuths() {
                 clientSecret,
                 onRefresh: authRefreshCallback(row.userID)
             }, data);
-
-            c.inf("Twitch Token Managing initialized");
-    
-            return true;
         });
-    
+        c.inf("Twitch Token Managing initialized");
+        instances.Emitter.emit('TwitchAllAuths');
+        return true;
     }
 }
 
