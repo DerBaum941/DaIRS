@@ -5,8 +5,8 @@ const db = require('better-sqlite3')('./src/db/sqlite.db');
 
 var instances;
 
-const tables_script = fs.readFileSync(__dirname+"\\tables.sql",'utf-8');
-const create_script = fs.readFileSync(__dirname+"\\create.sql",'utf-8');
+const tables_script = fs.readFileSync(__dirname+"/tables.sql",'utf-8');
+const create_script = fs.readFileSync(__dirname+"/create.sql",'utf-8');
 
 function init(callbacks) {
     instances = callbacks;
