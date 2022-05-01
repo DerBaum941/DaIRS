@@ -22,12 +22,6 @@ var instances;
 const { Router } = require('express');
 
 
-
-/*  This link to generate a Token
-*   http://localhost:3000/auth/twitch?scope=channel:moderate+chat:edit+chat:read
-*/
-
-
 // Define our constants, you will change these with your own
 var TWITCH_CLIENT_ID;
 var TWITCH_SECRET;
@@ -77,7 +71,10 @@ const httpsOptions = {
 https.get(httpsOptions, res => {
   if (res?.statusCode != 200) done(null, null);
   res.on(('data'), (body) => {
-    done(null, JSON.parse(body));
+    const data = JSON.parse(body);
+    c.debug("Got User Profile Info:")
+    c.debug(data);
+    done(null, data);
   });
 });
 }
@@ -101,6 +98,7 @@ passport.use('twitch', new OAuth2Strategy({
 (accessToken, refreshToken, profile, done) => {
   profile.accessToken = accessToken;
   profile.refreshToken = refreshToken;
+  c.debug("Got Token for UID: "+profile.data[0].id);
   profile.data[0].accessToken = accessToken;
   profile.data[0].refreshToken = refreshToken;
 
@@ -114,7 +112,7 @@ router.get('/twitch/bot', passport.authenticate('twitch', {scope: BOT_SCOPE}));
 router.get('/twitch/user', passport.authenticate('twitch', {scope: USER_SCOPE}));
 
 // Set route for OAuth redirect
-router.get('/twitch/callback', passport.authenticate('twitch', { successRedirect: '/auth/twitch/success', failureRedirect: '/' }));
+router.get('/twitch/callback', passport.authenticate('twitch', { successRedirect: '/auth/twitch/success', failureRedirect: '/stats' }));
 
 // Define a simple template to safely generate HTML with values from user's profile
 var template = handlebars.compile(`
