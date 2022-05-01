@@ -3,6 +3,7 @@ ENV NODE_ENV=production
 WORKDIR /home/node/dairs
 RUN mkdir /home/node/dairs/conf
 RUN mkdir /home/node/dairs/src/db
+RUN mkdir /home/node/dairs/src/db/backups
 RUN mkdir /home/node/dairs/logs
 COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
 RUN npm install --production --silent
