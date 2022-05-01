@@ -52,8 +52,9 @@ app.use('*', (req,res)=>{
 
 //Error handling
 app.use((err, req, res, next) => {
-  console.error(err.stack)
-  res.status(500).send('Something broke!')
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+  next();
 })
 
 app.listen(cnf.port);

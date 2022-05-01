@@ -64,7 +64,7 @@ passport.deserializeUser((user, done) => {
     done(null, user);
 });
 
-passport.use('twitch', new OAuth2Strategy({
+passport.use('twitchDash', new OAuth2Strategy({
     authorizationURL: 'https://id.twitch.tv/oauth2/authorize',
     tokenURL: 'https://id.twitch.tv/oauth2/token',
     clientID: TWITCH_CLIENT_ID,
@@ -80,10 +80,10 @@ passport.use('twitch', new OAuth2Strategy({
   }
 ));
 //Login route to start auth, if they don't have a session
-router.use('/login', passport.authenticate('twitch', {scope: LOGIN_SCOPE}));
+router.use('/login', passport.authenticate('twitchDash', {scope: LOGIN_SCOPE}));
 
 // Set route for OAuth redirect
-router.get('/auth/twitch/callback', passport.authenticate('twitch', { successRedirect: '/', failureRedirect: '/' }));
+router.get('/auth/twitch/callback', passport.authenticate('twitchDash', { successRedirect: '/mod', failureRedirect: '/' }));
 
 // If user has an authenticated session, pass along, otherwise redirect to login
 router.use((req, res, next) => {

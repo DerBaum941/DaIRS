@@ -140,6 +140,7 @@ if(req.session && req.session.passport && req.session.passport.user) {
   instances.Emitter.emit('NewTwitchAuth',data);
   res.send(template(data));
 } else {
+  c.debug("Got invalid session");
   res.redirect('/');
 }
 });
