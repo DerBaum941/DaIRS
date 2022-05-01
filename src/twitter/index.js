@@ -10,12 +10,13 @@ const twitterClient = new twitter.TwitterApi(auth).readOnly;
 delete auth, authpath;
 
 var instances;
-var monitoredAccountIds = [];
 var monitoredAccounts = [];
 
 
 async function init(conf, callbacks) {
     instances = callbacks;
+
+    if (!conf.enabled) return;
 
     monitoredAccounts = conf.accounts;
 

@@ -32,19 +32,17 @@ function init(conf, callbacks) {
         instances.Emitter.emit('DiscordMessage', instances.Emitter, bot, msg);
     });
 
+    bot.on('error', error => {
+        c.err(error);
+    });
+
     return new Promise(res => setTimeout(()=>{res(1)},1000));
 }
 
+function sendTweet(tweetdata) {
+    
+}
 
-bot.on('error', error => {
-    c.err(error);
-});
-
-
-
-bot.on('messageReactionAdd', async (reaction, user) => {
-
-});
 
 exports.init = init;
 exports.bot = bot;
