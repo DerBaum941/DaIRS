@@ -7,5 +7,8 @@ COPY . /usr/src/app
 EXPOSE 9090
 RUN chown -R node /usr/src/app
 USER node
+CMD mkdir /usr/src/app/conf
+CMD mkdir /usr/src/app/db
+CMD mkdir /usr/src/app/logs
 CMD npm run build
 CMD npm start
