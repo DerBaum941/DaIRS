@@ -1,7 +1,7 @@
 import React from 'react'
 import axios from "axios"
 import '../../styles/Leaderboard.scss'
-import conf from '../../../../../conf/general.json' 
+import conf from '../../../../../conf/general.json';
 
 class Commands extends React.Component {
   

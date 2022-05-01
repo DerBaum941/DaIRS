@@ -6,7 +6,7 @@ import https from 'https';
 import { randomBytes } from 'crypto';
 import path from 'path';
 import fs from 'fs';
-import conf from '../../../conf/general.json';
+import conf from '../../../conf/general.json' assert { type: 'json' };
 
 //Subroutes
 //import routesV1 from './v1/index.mjs';

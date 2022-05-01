@@ -1,7 +1,7 @@
 import React from "react"
 import axios from "axios"
 import { Link } from "react-router-dom"
-import conf from '../../../../../conf/general.json' 
+import conf from '../../../../../conf/general.json';
 
 import '../../styles/Leaderboard.scss'
 
