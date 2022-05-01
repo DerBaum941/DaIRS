@@ -43,8 +43,6 @@ async function init (cnf, callbackero) {
 
   const CALLBACK_URL = cnf.oauth_uri;
 
-  //const CALLBACK_URL     = 'http://localhost:3000/auth/twitch/callback';
-
   
 {
   const authpath = path.normalize(__dirname+'./../../conf/credentials.json');
