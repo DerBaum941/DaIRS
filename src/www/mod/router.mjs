@@ -6,7 +6,9 @@ import https from 'https';
 import { randomBytes } from 'crypto';
 import path from 'path';
 import fs from 'fs';
-import conf from '../../../conf/general.json' assert { type: 'json' };
+
+const confpath = path.resolve('./conf/general.json');
+const conf = JSON.parse(fs.readFileSync(confpath, 'utf8'));
 
 //Subroutes
 //import routesV1 from './v1/index.mjs';

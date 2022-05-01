@@ -88,50 +88,48 @@ async function initalizeChannels() {
 async function initAuths() {
     const queryData = instances.DB.database.prepare("SELECT * FROM twitch_auth_tokens").all();
 
-    if(!queryData) {
-        c.warn("[Twitch] Couldn't find User Access Token. Retrying");
+    if(!queryData || queryData.length == 0) {
+        c.warn("[Twitch] Couldn't find Token Data. Retrying");
         return new Promise(res => {
-            setTimeout(async ()=>{
-                await initAuths();
-                res(1);
+            setTimeout(()=>{
+                initAuths().then(res);
             },2000);
         });
+    } else {
+        queryData.forEach(async row => {
+            const user = await apiClient.users.getUserById(row.userID);
+            authorizedChannels.push(user.name);
+    
+            const data = {
+                "accessToken": row.accessToken,
+                "refreshToken": row.refreshToken,
+                "expiresIn": row.expiresIn,
+                "obtainmentTimestamp": row.obtainmentTimestamp,
+                "scope": JSON.parse(row.scope)
+            };
+            apiAuthorizers[row.userID] = new RefreshingAuthProvider({
+                clientId,
+                clientSecret,
+                onRefresh: authRefreshCallback(row.userID)
+            }, data);
+        });
+    
+        c.inf("Twitch Token Managing initialized");
+    
+        return new Promise(res=>setTimeout(res,2000));
     }
-
-    queryData.forEach(async row => {
-        const user = await apiClient.users.getUserById(row.userID);
-        authorizedChannels.push(user.name);
-
-        const data = {
-            "accessToken": row.accessToken,
-            "refreshToken": row.refreshToken,
-            "expiresIn": row.expiresIn,
-            "obtainmentTimestamp": row.obtainmentTimestamp,
-            "scope": JSON.parse(row.scope)
-        };
-        apiAuthorizers[row.userID] = new RefreshingAuthProvider({
-            clientId,
-            clientSecret,
-            onRefresh: authRefreshCallback(row.userID)
-        }, data);
-    });
-
-    c.inf("Twitch Token Managing initialized");
-    //c.debug("Pausing process due to rate limiting");
-
-    return new Promise(res=>setTimeout(res,2000));
 }
 
 function initChatClient() {
     const authProvider = apiAuthorizers[botID];
 
-    if(!authProvider) {
+    if(!authProvider || apiAuthorizers.length == 0) {
         c.warn("[Twitch] Couldn't find User Access Token. Retrying");
         return new Promise(res => {
-            setTimeout(async ()=>{
-                await initAuths();
-                await initChatClient();
-                res(1);
+            setTimeout(()=>{
+                initAuths().then(()=> {
+                    initChatClient().then(res);
+                });
             },2000);
         });
     }
