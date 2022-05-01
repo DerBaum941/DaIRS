@@ -24,6 +24,9 @@ var instances;
  *  Initializer
  */
 
+
+var retryInter,retryChat;
+
 async function init(conf,callbacks) {
     instances = callbacks;
     botID = conf.selfID;
@@ -44,45 +47,27 @@ async function init(conf,callbacks) {
     apiClient = new ApiClient({ authProvider: globalAuth });
 
     c.inf("Twitch API Client initialized");
-
-    await initAuths();
-
-    await initChatClient();
-
-    const clients = initPubSub({chat: chatClient, api: apiClient});
-
-    //TODO:
-    //EventSub Client
-
+    
     instances.Emitter.on('NewTwitchAuth', newAuthCallback);
 
-    //Relay Events :)
-    chatClient.onMessage(async (channel, user, message, msg) => {
-        msg.timestamp = Date.now();
-        instances.Emitter.emit('TwitchMessage', instances.Emitter, clients, channel, user, message, msg);
-    });
-    chatClient.onWhisper(async (user, message, msg)=>{
-        msg.timestamp = Date.now();
-        instances.Emitter.emit('TwitchWhisper', instances.Emitter, clients, user, message, msg);
-    });
+    const success = await initAuths();
+    if(!success) {
+        retryInter = setInterval(initAuths,5000);
+    } else {
+        const worked = initChatClient();
+        if(!worked) {
+            retryChat = setInterval(async ()=>{
+                await initAuths();
+                initChatClient();
+            },5000);
+        }
+    }
 
-    chatClient.sendToStreamer = async (content) => {return chatClient.say(channel, content);}
-
-    exports.sendToStream = chatClient.sendToStreamer;
-
-    exports.Clients = {chat: chatClient, api: apiClient, pubsub: pubSubClient, channel: channel};
-
-    return new Promise(res=>setTimeout(res,100));
-}
-
-async function initalizeChannels() {
     return new Promise(res => {
-        instances.DB.database.prepare('SELECT userID FROM twitch_auth_tokens').pluck().all().forEach(async userID=>{
-            const user = await apiClient.users.getUserById(userID);
-            authorizedChannels.push(user.name);
-        });
-        setTimeout(res,1000);
+        instances.Emitter.on('TwitchInitComplete',res);
     });
+    //TODO:
+    //EventSub Client
 }
 
 async function initAuths() {
@@ -90,12 +75,10 @@ async function initAuths() {
 
     if(!queryData || queryData.length == 0) {
         c.warn("[Twitch] Couldn't find Token Data. Retrying");
-        return new Promise(res => {
-            setTimeout(()=>{
-                initAuths().then(res);
-            },2000);
-        });
+        return false;
     } else {
+        if (retryInter)
+            clearInterval(retryInter);
         queryData.forEach(async row => {
             const user = await apiClient.users.getUserById(row.userID);
             authorizedChannels.push(user.name);
@@ -112,11 +95,12 @@ async function initAuths() {
                 clientSecret,
                 onRefresh: authRefreshCallback(row.userID)
             }, data);
+
+            c.inf("Twitch Token Managing initialized");
+    
+            return true;
         });
     
-        c.inf("Twitch Token Managing initialized");
-    
-        return new Promise(res=>setTimeout(res,2000));
     }
 }
 
@@ -125,16 +109,13 @@ function initChatClient() {
 
     if(!authProvider || apiAuthorizers.length == 0) {
         c.warn("[Twitch] Couldn't find User Access Token. Retrying");
-        return new Promise(res => {
-            setTimeout(()=>{
-                initAuths().then(()=> {
-                    initChatClient().then(res);
-                });
-            },2000);
-        });
+        return false;
     }
 
     chatClient = new ChatClient({authProvider: authProvider, channels:[channel], requestMembershipEvents: true, isAlwaysMod: true});
+
+    if(retryChat)
+        clearInterval(retryChat);
 
     chatClient.isMod = (username) => {
         return mods.includes(username);
@@ -148,7 +129,27 @@ function initChatClient() {
 
     chatClient.connect();
 
-    return new Promise(res=>setTimeout(res,1000));
+
+    //Relay Events :)
+    chatClient.onMessage(async (channel, user, message, msg) => {
+        msg.timestamp = Date.now();
+        instances.Emitter.emit('TwitchMessage', instances.Emitter, clients, channel, user, message, msg);
+    });
+    chatClient.onWhisper(async (user, message, msg) => {
+        msg.timestamp = Date.now();
+        instances.Emitter.emit('TwitchWhisper', instances.Emitter, clients, user, message, msg);
+    });
+    chatClient.sendToStreamer = async (content) => { return chatClient.say(channel, content); }
+
+    const clients = initPubSub({ chat: chatClient, api: apiClient });
+
+    exports.sendToStream = chatClient.sendToStreamer;
+
+    exports.Clients = { chat: chatClient, api: apiClient, pubsub: pubSubClient, channel: channel };
+
+    instances.Emitter.emit('TwitchInitComplete');
+
+    return true;
 }
 
 async function initPubSub(clients) {

@@ -17,10 +17,6 @@ async function init(cnf, instance) {
     
     await oauthApp.init(cnf,instance);
 
-    
-
-
-
 const app = Express();
 const options = {
   dotfiles: 'ignore',
@@ -41,6 +37,9 @@ app.use('/api', apiRoutes.default.v1);
 //Mod dashboard
 const dashboard = await import('./mod/router.mjs');
 app.use('/mod', dashboard.default);
+
+//Giving it the User Token
+app.use('/auth', oauthApp.router);
 
 //Main Landing page
 app.use('/', Express.static(path.join(__dirname, 'static'), options));

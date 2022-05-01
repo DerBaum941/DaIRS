@@ -9,7 +9,6 @@ or in the "license" file accompanying this file. This file is distributed on an 
 
 */
 // Define our dependencies
-const express      = require('express');
 const passport     = require('passport');
 var session        = require('express-session');
 var OAuth2Strategy = require('passport-oauth').OAuth2Strategy;
@@ -20,6 +19,8 @@ var path           = require('path');
 var fs             = require('fs');
 var c              = require('../common/logman.js');
 var instances;
+const { Router } = require('express');
+
 
 
 /*  This link to generate a Token
@@ -38,6 +39,8 @@ const ACTIVE_SCOPE     = BOT_SCOPE;
 const USER_SCOPE       = DEFAULT_SCOPE;
 
 
+const router = Router();
+
 async function init (cnf, callbackero) {
   instances = callbackero;
 
@@ -51,15 +54,11 @@ async function init (cnf, callbackero) {
   TWITCH_SECRET = auth.clientSecret;
 }
 
-// Initialize Express and middlewares
-const app = express();
 
+router.use(session({secret: SESSION_SECRET, resave: false, saveUninitialized: false}));
 
-
-app.use(session({secret: SESSION_SECRET, resave: false, saveUninitialized: false}));
-
-app.use(passport.initialize());
-app.use(passport.session());
+router.use(passport.initialize());
+router.use(passport.session());
 
 
 // Override passport profile function to get user profile from Twitch API
@@ -110,12 +109,12 @@ passport.use('twitch', new OAuth2Strategy({
 ));
 
 // Set route to start OAuth link, this is where you define scopes to request
-app.get('/auth/twitch', passport.authenticate('twitch', {scope: ACTIVE_SCOPE}));
-app.get('/auth/twitch/bot', passport.authenticate('twitch', {scope: BOT_SCOPE}));
-app.get('/auth/twitch/user', passport.authenticate('twitch', {scope: USER_SCOPE}));
+router.get('/twitch', passport.authenticate('twitch', {scope: ACTIVE_SCOPE}));
+router.get('/twitch/bot', passport.authenticate('twitch', {scope: BOT_SCOPE}));
+router.get('/twitch/user', passport.authenticate('twitch', {scope: USER_SCOPE}));
 
 // Set route for OAuth redirect
-app.get('/auth/twitch/callback', passport.authenticate('twitch', { successRedirect: '/auth/twitch/success', failureRedirect: '/' }));
+router.get('/twitch/callback', passport.authenticate('twitch', { successRedirect: '/auth/twitch/success', failureRedirect: '/' }));
 
 // Define a simple template to safely generate HTML with values from user's profile
 var template = handlebars.compile(`
@@ -128,7 +127,7 @@ var template = handlebars.compile(`
 </table></html>`);
 
 // If user has an authenticated session, display it, otherwise display link to authenticate
-app.get('/auth/twitch/success', (req, res) => {
+router.get('/twitch/success', (req, res) => {
 if(req.session && req.session.passport && req.session.passport.user) {
   const data = req.session.passport.user.data[0];
   
@@ -147,11 +146,7 @@ if(req.session && req.session.passport && req.session.passport.user) {
 }
 });
 
-app.listen(cnf.oauth_port, () => {
-c.inf('Twitch auth running at '+cnf.oauth_port);
-});
-
-
   return new Promise(res => setTimeout(res,100));
 }
 exports.init = init;
+exports.router = router;
