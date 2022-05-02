@@ -50,21 +50,25 @@ async function init(conf,callbacks) {
     
     instances.Emitter.on('NewTwitchAuth', newAuthCallback);
 
-    const success = await initAuths();
-    if(!success) {
-        retryInter = setInterval(initAuths,5000);
-    } 
-    instances.Emitter.once('TwitchAllAuths',()=>{
-        const worked = initChatClient();
-        if(!worked) {
-            retryChat = setInterval(async ()=>{
-                await initAuths();
-                initChatClient();
-            },5000);
-        }
-    });
+
+
     return new Promise(res => {
         instances.Emitter.on('TwitchInitComplete',res);
+
+        instances.Emitter.once('TwitchAllAuths',()=>{
+            const worked = initChatClient();
+            if(!worked) {
+                retryChat = setInterval(async ()=>{
+                    await initAuths();
+                    initChatClient();
+                },5000);
+            }
+        });
+        
+        const success = await initAuths();
+        if(!success) {
+            retryInter = setInterval(initAuths,5000);
+        } 
     });
     //TODO:
     //EventSub Client
