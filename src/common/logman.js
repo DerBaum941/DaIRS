@@ -2,7 +2,7 @@ const moment = require('moment');
 const path = require('path');
 const fs = require('fs');
 const conf = require('./../../conf/general.json').logs;
-const logpath = path.normalize(__dirname+'./../../logs/');
+const logpath = path.resolve('./logs/');
 
 const process = require('process');
 
@@ -15,7 +15,7 @@ var level_outFile = levels.includes(conf.loglevel_file) ? conf.loglevel_file : l
 var trace_path = conf.always_trace === undefined ? true : conf.always_trace;
 var add_timestamp = conf.add_timestamp === undefined ? true : conf.add_timestamp;
 var log_to_file = conf.log_to_file === undefined ? true : conf.log_to_file;
-const currentFilename = logpath + createFilename();
+const currentFilename = logpath + '/' + createFilename();
 
 /*
  *  Interface Config Functions

@@ -47,7 +47,7 @@ function pruneOldLogs() {
 }
 
 function pruneDBBackups() {
-    const backups = path.resolve('./src/db/backups')+'\\';
+    const backups = path.resolve('./src/db/backups')+'/';
     const date = moment().subtract(conf.retentionDays, 'days').format("YY-MM-DD");
     const cutOffFile = date + ".db";
 
@@ -70,7 +70,7 @@ function backupDB() {
 
     const db = require('better-sqlite3')('./src/db/sqlite.db');
 
-    db.backup(`${backupPath}\\${filename}`)
+    db.backup(`${backupPath}/${filename}`)
         .then(()=>{
             c.inf("Backed up the Database!");
         })

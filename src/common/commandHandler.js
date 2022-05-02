@@ -860,24 +860,8 @@ class CommandHandler {
          *  Validate Path & Load module
          */
 
-        //Remove leading path and split at folders
-        //Ensure it is a .js file
-        //const pathRe=/(\\commands\\)(\w*\\)*([\w-]+\.js)/gi;
-        //var groups = filePath.split(pathRe);
-        //Remove trailing crap
-        //Remove unmatched optional Groups
-        //groups = groups.slice(0,-1).filter( Boolean );
-
-        //If the Match failed the path was invalid
-        //if (groups.length <=1) return null;
-        //Has to have a commands folder
-        //if (!groups.includes('commands')) return null;
-
-        //If it's in the commands/disabled/ directory, skip the files
-        //if (groups[1] === 'disabled\\') return true;
-
         //Create relative path so node can include it
-        const relativePath = '.\\'+path.relative(__dirname, path.resolve(filePath));
+        const relativePath = './'+path.relative(__dirname, path.resolve(filePath));
         //c.debug("Loading command "+groups[groups.length-1]);
         //Load the .js file
         var cmdModule = require(relativePath);
