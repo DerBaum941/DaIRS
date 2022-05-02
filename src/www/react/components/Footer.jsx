@@ -4,7 +4,11 @@ import '../styles/Footer.scss'
 const Footer = () => {
   return (
     <footer className="Footer">
-      This is a footer
+      <p>
+        Bot made by <a href="https://www.twitch.tv/derbaum941"> DerBaum941 </a> 
+        / Website design by
+        <a href="https://www.twitch.tv/OtterRu"> OtterRu </a>
+      </p>
     </footer>
   )
 }

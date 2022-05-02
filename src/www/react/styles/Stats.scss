@@ -1,0 +1,53 @@
+@import "./Variables";
+
+.Stats {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.StatsMain {
+  -webkit-box-shadow: $shadow;
+  -moz-box-shadow: $shadow;
+  box-shadow: $shadow;
+
+  border-radius: 5px;
+  
+  background-color: $secondary;
+  padding: 40px;
+  
+  width: 90%;
+  height: 50%
+}
+
+.StatsMenu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  a {
+    padding: 0px 10px;
+    margin: 0px 10px;
+    border-top: 1px solid $primary;
+
+    &:hover {
+      border-color: $highlight;
+      transition: all 0.2s ease-in-out;
+    }
+  }
+
+  .active {
+    border-color: $highlight;
+  }
+}
+
+.StatsBody {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  font-size: 16px;
+}
+

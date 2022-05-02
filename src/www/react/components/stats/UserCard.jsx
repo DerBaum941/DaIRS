@@ -64,7 +64,7 @@ class UserCard extends React.Component {
 
             this.props.data.redeemsGot !== null &&
             <p key={8}>
-              Redeems fulfilled from Daishu: {this.props.data.redeemsGot}
+              Redeems fulfilled by Daishu: {this.props.data.redeemsGot}
             </p>,
 
             this.props.data.linksRequested !== 0 &&

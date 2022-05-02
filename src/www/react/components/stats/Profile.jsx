@@ -1,6 +1,6 @@
 import React from "react"
 import axios from "axios"
-import { useParams } from "react-router-dom"
+import { useParams, Link } from "react-router-dom"
 import UserCard from "./UserCard"
 import conf from '../../../../../conf/general.json';
 
@@ -42,6 +42,7 @@ class Profile extends React.Component {
   render() {
     return (
       <main className="Profile">
+        <Link to='/stats'> Back to Stats </Link>
         <p>
           Hello, below you can find all of the relevant stats for the channel.
         </p>

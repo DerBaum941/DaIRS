@@ -4,9 +4,9 @@ import '../../styles/Leaderboard.scss'
 
 const StatsHome = () => {
   return (
-    <main className="StatsHome ">
-      Bla
-    </main>
+    <>
+      Have some stats, bitch. Pick one of the available tabs.
+    </>
   )
 }
 

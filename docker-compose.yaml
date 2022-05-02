@@ -13,7 +13,6 @@ services:
       - ./general.json:/home/node/dairs/conf/general.json
       - ./credentials.json:/home/node/dairs/conf/credentials.json
     ports:
-      - 3000:3000
       - 9090:9090
   backup:
     image: offen/docker-volume-backup:v2
