@@ -9,7 +9,7 @@ const { BasicPubSubClient, PubSubClient } = require('@twurple/pubsub');
 
 var botID, mods, channel, redeemID;
 
-var authorizedChannels = [];
+//var authorizedChannels = [];
 var apiAuthorizers = [];
 
 var chatClient, apiClient, pubSubClient;
@@ -23,9 +23,6 @@ var instances;
 /*
  *  Initializer
  */
-
-
-var retryInter,retryChat;
 
 async function init(conf,callbacks) {
     instances = callbacks;
@@ -52,23 +49,11 @@ async function init(conf,callbacks) {
 
 
 
-    return new Promise(async res => {
+    return new Promise(res => {
         instances.Emitter.on('TwitchInitComplete',res);
+        instances.Emitter.on('TwitchAllAuths', initChatClient);
 
-        instances.Emitter.once('TwitchAllAuths',()=>{
-            const worked = initChatClient();
-            if(!worked) {
-                retryChat = setInterval(async ()=>{
-                    await initAuths();
-                    initChatClient();
-                },5000);
-            }
-        });
-
-        const success = await initAuths();
-        if(!success) {
-            retryInter = setInterval(initAuths,5000);
-        } 
+        initAuths();
     });
     //TODO:
     //EventSub Client
@@ -79,31 +64,30 @@ async function initAuths() {
 
     if(!queryData || queryData.length == 0) {
         c.warn("[Twitch] Couldn't find Token Data. Retrying");
+        setTimeout(initAuths,5000);
         return false;
-    } else {
-        if (retryInter)
-            clearInterval(retryInter);
-        queryData.forEach(async row => {
-            const user = await apiClient.users.getUserById(row.userID);
-            authorizedChannels.push(user.name);
-    
-            const data = {
-                "accessToken": row.accessToken,
-                "refreshToken": row.refreshToken,
-                "expiresIn": row.expiresIn,
-                "obtainmentTimestamp": row.obtainmentTimestamp,
-                "scope": JSON.parse(row.scope)
-            };
-            apiAuthorizers[row.userID] = new RefreshingAuthProvider({
-                clientId,
-                clientSecret,
-                onRefresh: authRefreshCallback(row.userID)
-            }, data);
-        });
-        c.inf("Twitch Token Managing initialized");
-        instances.Emitter.emit('TwitchAllAuths');
-        return true;
     }
+
+    queryData.forEach(row => {
+        //authorizedChannels.push(user.name);
+
+        const data = {
+            "accessToken": row.accessToken,
+            "refreshToken": row.refreshToken,
+            "expiresIn": row.expiresIn,
+            "obtainmentTimestamp": row.obtainmentTimestamp,
+            "scope": JSON.parse(row.scope)
+        };
+        apiAuthorizers[row.userID] = new RefreshingAuthProvider({
+            clientId,
+            clientSecret,
+            onRefresh: authRefreshCallback(row.userID)
+        }, data);
+    });
+
+    instances.Emitter.emit('TwitchAllAuths');
+    return true;
+
 }
 
 function initChatClient() {
@@ -111,26 +95,24 @@ function initChatClient() {
 
     if(!authProvider || apiAuthorizers.length == 0) {
         c.warn("[Twitch] Couldn't find User Access Token. Retrying");
+        setTimeout(initAuths,5000);
         return false;
     }
+    c.inf("Twitch Token Managing initialized");
 
     chatClient = new ChatClient({authProvider: authProvider, channels:[channel], requestMembershipEvents: true, isAlwaysMod: true});
-
-    if(retryChat)
-        clearInterval(retryChat);
 
     chatClient.isMod = (username) => {
         return mods.includes(username);
     }
     chatClient.isModByID = async (user) => {
-        const id = await apiClient.users.getUserByName(user);
+        const id = await apiClient.users.getUserByID(user);
         return chatClient.isMod(id.name);
     }
 
     chatClient.onRegister(registerCallback);
 
     chatClient.connect();
-
 
     //Relay Events :)
     chatClient.onMessage(async (channel, user, message, msg) => {
@@ -145,6 +127,10 @@ function initChatClient() {
 
     const clients = initPubSub({ chat: chatClient, api: apiClient });
 
+
+    chatClient.sendToStreamer(`[Debug] Hello World!`);
+
+    
     exports.sendToStream = chatClient.sendToStreamer;
 
     exports.Clients = { chat: chatClient, api: apiClient, pubsub: pubSubClient, channel: channel };
