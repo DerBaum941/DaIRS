@@ -52,7 +52,7 @@ async function init(conf,callbacks) {
 
 
 
-    return new Promise(res => {
+    return new Promise(async res => {
         instances.Emitter.on('TwitchInitComplete',res);
 
         instances.Emitter.once('TwitchAllAuths',()=>{
@@ -64,7 +64,7 @@ async function init(conf,callbacks) {
                 },5000);
             }
         });
-        
+
         const success = await initAuths();
         if(!success) {
             retryInter = setInterval(initAuths,5000);
