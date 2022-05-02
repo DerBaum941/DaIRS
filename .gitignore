@@ -1,5 +1,5 @@
 node_modules
-conf/*
+conf/ignore
 logs
 package-lock.json
 *sqlite.db

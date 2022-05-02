@@ -1,0 +1,42 @@
+{
+    "project_name": "DaIRS",
+    "logs": {
+        "loglevels": ["debug", "info", "warning", "error", "none"],
+        "loglevel_console": "debug",
+        "loglevel_file": "debug",
+        "add_timestamp": true,
+        "always_trace": false,
+        "log_to_file": true,
+        "retentionDays": -1
+    },
+    "www": {
+        "host": "https://example.com",
+        "port": 9090,
+        "oauth_uri": "https://example.com/auth/twitch/callback",
+        "dashboard_login_uri": "https://example.com/mod/auth/twitch/callback"
+    },
+    "twitch": {
+        "commandPrefix": "!",
+        "selfID": "<BOT_USER_ID>",
+        "mods": [
+            "<CHANNEL_MOD_NAME>",
+            "<CHANNEL_MOD_NAME>",
+            "_xXSt1lesM0d1337Xx_"
+        ],
+        "channel": "<YOUR_TWITCH_NAME>",
+        "redeem_streak_reward_id": "<REWARD_ID_TO_TRACK>",
+        "stream_start_redeem": "<REWARD_FOR_STREAM_START>"
+    },
+    "discord": {
+        "status": "Being a Bot",
+        "linkRequestChannelID": "<ID_FOR_MOD_CHANNEL>",
+        "twitterPostsChannelID": "NOT IMPLEMENTED"
+    },
+    "twitter": {
+        "enabled": false,
+        "accounts": [
+            "NOT IMPLEMENTED",
+            "NOT IMPLEMENTED"
+        ]
+    }
+}
