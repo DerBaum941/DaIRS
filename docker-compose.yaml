@@ -21,7 +21,7 @@ services:
       BACKUP_FILENAME: backup-%Y-%m-%dT%H-%M-%S.tar.gz
       BACKUP_LATEST_SYMLINK: backup-latest.tar.gz
       BACKUP_STOP_CONTAINER_LABEL: dairs
-      BACKUP_RETENTION_DAYS: 7
+      BACKUP_RETENTION_DAYS: 31
       BACKUP_PRUNING_PREFIX: backup-
       BACKUP_CRON_EXPRESSION: "0 0 4 * * 1"
     volumes:
