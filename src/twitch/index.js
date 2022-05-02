@@ -47,8 +47,6 @@ async function init(conf,callbacks) {
     
     instances.Emitter.on('NewTwitchAuth', newAuthCallback);
 
-
-
     return new Promise(res => {
         instances.Emitter.on('TwitchInitComplete',res);
         instances.Emitter.on('TwitchAllAuths', initChatClient);
@@ -90,7 +88,7 @@ async function initAuths() {
 
 }
 
-function initChatClient() {
+async function initChatClient() {
     const authProvider = apiAuthorizers[botID];
 
     if(!authProvider || apiAuthorizers.length == 0) {
@@ -112,7 +110,7 @@ function initChatClient() {
 
     chatClient.onRegister(registerCallback);
 
-    chatClient.connect();
+    await chatClient.connect();
 
     //Relay Events :)
     chatClient.onMessage(async (channel, user, message, msg) => {
@@ -123,15 +121,12 @@ function initChatClient() {
         msg.timestamp = Date.now();
         instances.Emitter.emit('TwitchWhisper', instances.Emitter, clients, user, message, msg);
     });
-    chatClient.sendToStreamer = async (content) => { return chatClient.say(channel, content); }
+    chatClient.sendToStreamer = (content) => { chatClient.say(channel, content); return; };
 
-    const clients = initPubSub({ chat: chatClient, api: apiClient });
+    var clients = { chat: chatClient, api: apiClient }
+    clients = initPubSub(clients);
 
-
-    chatClient.sendToStreamer(`[Debug] Hello World!`);
-
-    
-    exports.sendToStream = chatClient.sendToStreamer;
+    exports.sendToStream = (content) => { chatClient.say(channel, content); return; };
 
     exports.Clients = { chat: chatClient, api: apiClient, pubsub: pubSubClient, channel: channel };
 
@@ -140,12 +135,12 @@ function initChatClient() {
     return true;
 }
 
-async function initPubSub(clients) {
+function initPubSub(clients) {
     
     pubSubClient = new PubSubClient();
     clients.pubsub = pubSubClient;
 
-    apiAuthorizers.forEach(async (auth)=> {
+    apiAuthorizers.forEach(auth => {
         pubSubClient.registerUserListener(auth).then((id) => {
             addPubSubEvents(id,clients);
         });
@@ -154,6 +149,7 @@ async function initPubSub(clients) {
     c.inf("Twitch Pub/Subs initialized");
     return clients;
 }
+
 function addPubSubEvents(userID,clients) {
     pubSubClient.onRedemption(userID, async (message) => {
         instances.Emitter.emit('TwitchRedeem', instances.Emitter, clients, message);
