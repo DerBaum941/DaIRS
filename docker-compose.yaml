@@ -1,19 +1,30 @@
 version: "3.4"
 
-services:
-	dairs:
-		image: ghcr.io/derbaum941/dairs:latest
-		volumes:
-			- db_data:/src/db
-			- type: bind
-				source: ./general.json
-				target: /usr/src/app/conf/general.json
-			- type: bind
-				source: ./credentials.json
-				target: /usr/src/app/conf/credentials.json
-		environment:
-		ports:
-			- 9090:9090
+volumes:
+  database:
 
-	volumes:
-		db_data: {}
+services:
+  dairs:
+    labels:
+      - docker-volume-backup.stop-during-backup=dairs
+    image: ghcr.io/derbaum941/dairs:latest
+    volumes:
+      - database:/home/node/dairs/src/db
+      - ./general.json:/home/node/dairs/conf/general.json
+      - ./credentials.json:/home/node/dairs/conf/credentials.json
+    ports:
+      - 3000:3000
+      - 9090:9090
+  backup:
+    image: offen/docker-volume-backup:v2
+    environment:
+      BACKUP_FILENAME: backup-%Y-%m-%dT%H-%M-%S.tar.gz
+      BACKUP_LATEST_SYMLINK: backup-latest.tar.gz
+      BACKUP_STOP_CONTAINER_LABEL: dairs
+      BACKUP_RETENTION_DAYS: 7
+      BACKUP_PRUNING_PREFIX: backup-
+      BACKUP_CRON_EXPRESSION: "0 0 4 * * 1"
+    volumes:
+      - database:/backup/my-app-backup:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${HOME}/backups:/archive
