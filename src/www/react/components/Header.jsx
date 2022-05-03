@@ -1,5 +1,5 @@
 import React from "react"
-import { NavLink, Link } from "react-router-dom"
+import { NavLink } from "react-router-dom"
 
 import Carrd  from "../assets/Carrd.png"
 import Tiktok from "../assets/Tiktok.png"
@@ -12,13 +12,16 @@ const Header = () => {
   return (
     <header>
       <div className="NavHome">
-        DaIRS
+        <NavLink to="/">DaIRS</NavLink>
       </div>
 
       <div className="NavButtons">
         <NavLink to="/">Home</NavLink>
-        <NavLink to="login">Sell Data</NavLink>
+        {/* <NavLink to="login">Sell Data</NavLink> */}
         <NavLink to="stats">Statssssss</NavLink>
+
+        {/* Add a component that advertises all of her socials too */}
+        <NavLink to="/">Shilling</NavLink> 
       </div>
 
       <div className="NavSocials">

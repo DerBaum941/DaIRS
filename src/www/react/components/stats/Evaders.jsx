@@ -10,7 +10,7 @@ class Evaders extends React.Component {
 
   state = {
     data: [],
-    connected: false
+    connected: true
   }
 
   componentDidMount = () => {
