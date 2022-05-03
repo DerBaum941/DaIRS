@@ -1,5 +1,8 @@
 import React from 'react'
 import axios from "axios"
+
+import Table from './Table';
+
 import '../../styles/Leaderboard.scss'
 import conf from '../../../../../conf/general.json';
 
@@ -7,38 +10,41 @@ class Commands extends React.Component {
   
   state = {
     data: [],
+    search: null,
     connected: true
   }
 
-  componentDidMount = () => {
+  fetchData = () => {
     axios.get(`${conf.www.host}/api/v1/stats/commands/`)
-      .then((res) => {
+    .then((res) => {
 
-        this.setState({data: res.data.filter( el => el.modOnly === 0), connected: true})
-      })
-      .catch((err) => {
-        this.setState({connected: false})
-        console.log(err);
-      })
+      this.setState({data: res.data.filter( el => el.modOnly === 0), connected: true})
+    })
+    .catch((err) => {
+      this.setState({connected: false})
+      console.log(err);
+    })
+  }
+
+  componentDidMount = () => {
+    this.fetchData()
+  }
+
+  searchTerm = (search) => {
+    search.length !== 0 ? this.setState({search}) : this.setState({search: null})
+  }
+
+  searchData = () => {
+    if (this.state.search === null) return this.state.data
+    return this.state.data.filter(e => e.name.toLowerCase().includes(this.state.search))
   }
 
   render () {
     return (
-      <div className="Commands Leaderboard Main">
-      <div className="Commands LeaderboardRow">
-        <div>Name</div>
-        <div>Description</div>
-        <div>Number used</div>
+      <div className="Commands2 Leaderboard Main">
+        <input type="text" onChange={(e) => this.searchTerm(e.target.value)}/>
+        <Table data={this.searchData()} connected={this.state.connected}/>
       </div>
-      {this.state.data.map((entry, index) => (
-        <div key={index} className="Commands LeaderboardRow">
-          <div>{entry.name}</div>
-          <div>{entry.description}</div>
-          <div>{entry.used}</div>
-        </div>
-      ))}
-      {this.state.connected === false && <p>Couldn't fucking get stats grr.</p>}
-    </div>
     )
   }
 }
