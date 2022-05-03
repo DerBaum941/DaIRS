@@ -37,7 +37,7 @@ class Redeems extends React.Component {
         </div>
       ))}
 
-        {this.state.connected ? "" : "Couldn't fucking get stuff"}
+      {this.state.connected === false && <p>Couldn't fucking get stats grr.</p>}
     </div>
     )
   }

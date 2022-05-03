@@ -5,7 +5,8 @@ import StatsHome from './stats/StatsHome';
 import Taxes from "./stats/Taxes";
 import Commands from "./stats/Commands";
 import Redeems from "./stats/Redeems";
-import "../styles/Stats.scss"
+import Evaders from './stats/Evaders';
+import "../styles/Stats.scss";
 
 const Stats = () => {
   return( 
@@ -14,9 +15,10 @@ const Stats = () => {
       <div className="StatsMain">
         <nav className="StatsMenu">
           {/* <NavLink strict to="/stats">Houm</NavLink> */}
-          <NavLink to="/stats/commands">Cmds</NavLink>
-          <NavLink to="/stats/taxes">txes</NavLink>
-          <NavLink to="/stats/redeems">redeems</NavLink>
+          <NavLink to="/stats/commands">Commands</NavLink>
+          <NavLink to="/stats/taxes">Taxes</NavLink>
+          <NavLink to="/stats/redeems">Redeems</NavLink>
+          <NavLink to="/stats/evaders">Evaders</NavLink>
         </nav>
         
         <div className="StatsBody">
@@ -25,6 +27,7 @@ const Stats = () => {
             <Route path="/commands" element = {<Commands />} />
             <Route path="/taxes" element = {<Taxes />} />
             <Route path="/redeems" element = {<Redeems />} />
+            <Route path="/evaders" element = {<Evaders />} />
             <Route path="/*" element = {<Navigate to ="/stats" />} />
           </Routes>
         </div>

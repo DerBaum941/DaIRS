@@ -2,10 +2,11 @@
 
 header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   background-color: $secondary;
   border-radius: 5px;
+  padding: 0px 40px;
   height: 60px;
 
   -webkit-box-shadow: $shadow;
@@ -15,6 +16,7 @@ header {
   .NavButtons {
     a {
       font-size: 20px;
+
     }
 
     * {
@@ -27,5 +29,19 @@ header {
         transition: all 0.2s ease-in-out;
      }
     }
+  }
+
+  .NavSocials {
+    a {
+      margin: 0px 5px;
+    }
+    img {
+      height: 20px;
+      width: auto;
+    }
+  }
+
+  .NavHome, .NavSocials {
+    width: 150px;
   }
 }

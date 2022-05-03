@@ -6,17 +6,17 @@ import conf from '../../../../../conf/general.json';
 import '../../styles/Leaderboard.scss'
 
 
-class Taxes extends React.Component {
+class Evaders extends React.Component {
 
   state = {
     data: [],
-    connected: true
+    connected: false
   }
 
   componentDidMount = () => {
     axios.get(`${conf.www.host}/api/v1/stats/streak/`)
       .then((res) => {
-        this.setState({data: res.data, connected: true})
+        this.setState({data: res.data.filter( el => el.active !== "Still active")})
       })
       .catch((err) => {
         this.setState({connected: false})
@@ -26,14 +26,14 @@ class Taxes extends React.Component {
 
   render() {
     return (
-      <div className="Taxes Leaderboard Main">
-        <div className="Taxes LeaderboardRow">
+      <div className="Evaders Leaderboard Main">
+        <div className="Evaders LeaderboardRow">
           <div>Name</div>
           <div>Streak</div>
           <div>Last Active</div>
         </div>
         {this.state.data.map((entry, index) => (
-          <div key={index} className="Taxes LeaderboardRow">
+          <div key={index} className="Evaders LeaderboardRow">
             <Link to={`/profile/${entry.name}`}> {entry.name} </Link>
             <div>{entry.value}</div>
             <div>{entry.active}</div>
@@ -45,4 +45,4 @@ class Taxes extends React.Component {
   }
 }
 
-export default Taxes
+export default Evaders
