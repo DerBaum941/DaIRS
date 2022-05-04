@@ -52,3 +52,21 @@
   font-size: 16px;
 }
 
+.Redeems, .Evaders {
+  .LeaderboardRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.Commands {
+  .LeaderboardRow {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+
+.Taxes {
+  .LeaderboardRow {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

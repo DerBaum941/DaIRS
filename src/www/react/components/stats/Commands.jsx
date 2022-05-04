@@ -1,6 +1,5 @@
 import React from 'react'
 import axios from "axios"
-
 import Table from './Table';
 
 import '../../styles/Leaderboard.scss'
@@ -36,14 +35,14 @@ class Commands extends React.Component {
 
   searchData = () => {
     if (this.state.search === null) return this.state.data
-    return this.state.data.filter(e => e.name.toLowerCase().includes(this.state.search))
+    return this.state.data.filter(e => e.name.toLowerCase().includes(this.state.search.toLowerCase()))
   }
 
   render () {
     return (
-      <div className="Commands2 Leaderboard Main">
+      <div className="Commands Leaderboard Main">
         <input type="text" onChange={(e) => this.searchTerm(e.target.value)}/>
-        <Table data={this.searchData()} connected={this.state.connected}/>
+        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Description", "Response", "Count"]}/>
       </div>
     )
   }

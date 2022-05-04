@@ -3,17 +3,18 @@ import React from "react";
 const Table = (props) => {
   return (
     <>
-      <div className="Commands2 LeaderboardRow">
-        <div>Name</div>
-        <div>Description</div>
-        <div>Number used</div>
+      <div className="LeaderboardRow" style={{borderBottom: '1px solid #df164b'}}>
+        {props.headers !== undefined && props.headers.map((entry, index) => (<div key={index}>{entry}</div>))}
       </div>
+
       {props.data !== null &&
         props.data.map((entry, index) => (
-            <div key={index} className="Commands2 LeaderboardRow">
+            <div key={index} className="LeaderboardRow">
               <div>{entry.name}</div>
-              <div>{entry.description}</div>
-              <div>{entry.used}</div>
+              {entry.description !== undefined && <div>{entry.description}</div>}
+              {entry.value !== undefined && <div>{entry.value}</div>}
+              {entry.used !== undefined && <div>{entry.used}</div>}
+              {entry.active !== undefined && <div>{entry.active}</div>}
             </div>
         ))}
 
