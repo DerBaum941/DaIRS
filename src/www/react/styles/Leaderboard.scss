@@ -39,4 +39,24 @@ align-items: center;
       padding: 10px;
     }
   }
+
+  input {
+    width: 30%;
+    height: 50px;
+    border-radius:25px;
+    background-color: $primary;
+    border: none;
+    padding: 0px 30px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+
+    border: 1px solid $highlight;
+
+    &:focus {
+      outline: none;
+    }
+  }
 }

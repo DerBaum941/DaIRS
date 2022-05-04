@@ -40,7 +40,7 @@ class Redeems extends React.Component {
   render () {
     return (
       <div className="Redeems Leaderboard Main">
-        <input type="text" onChange={(e) => this.searchTerm(e.target.value)}/>
+        <input placeholder='Search term' type="text" onChange={(e) => this.searchTerm(e.target.value)}/>
         <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Value"]}/>
       </div>
     )

@@ -43,9 +43,7 @@ class Profile extends React.Component {
         <p>
           Hello, below you can find all of the relevant stats for the channel.
         </p>
-        {/* <p>
-          {JSON.stringify(this.state.data)}
-        </p> */}
+
         <div className="UserCards">
           <UserCard data={this.state.data} />
         </div>
