@@ -42,8 +42,8 @@ align-items: center;
 
   input {
     width: 30%;
-    height: 50px;
-    border-radius:25px;
+    height: 40px;
+    border-radius:20px;
     background-color: $primary;
     border: none;
     padding: 0px 30px;
@@ -52,7 +52,7 @@ align-items: center;
     align-items: center;
     justify-content: center;
     color: white;
-
+    margin: 20px 0px;
     border: 1px solid $highlight;
 
     &:focus {
