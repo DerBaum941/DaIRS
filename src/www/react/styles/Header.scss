@@ -39,6 +39,7 @@ header {
     img {
       height: 20px;
       width: auto;
+      filter: invert(100%) sepia(50%) saturate(0%) hue-rotate(323deg) brightness(106%) contrast(101%); //Because changing the color in photoshop is way too much of a hassle. 
     }
   }
 

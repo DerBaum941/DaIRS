@@ -42,7 +42,7 @@ class Commands extends React.Component {
     return (
       <div className="Commands Leaderboard Main">
         <input placeholder='Search term' type="text" onChange={(e) => this.searchTerm(e.target.value)}/>
-        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Description", "Response", "Count"]}/>
+        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Description", "Response", "Count"]} nameLinks = {false}/>
       </div>
     )
   }

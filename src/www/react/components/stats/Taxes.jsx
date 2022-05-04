@@ -43,7 +43,7 @@ class Taxes extends React.Component {
     return (
       <div className="Taxes Leaderboard Main">
         <input placeholder='Search term' type="text" onChange={(e) => this.searchTerm(e.target.value)}/>
-        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Streak", "Tax Streak"]}/>
+        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Streak", "Tax Streak"]} nameLinks = {true}/>
       </div>
     )
   }

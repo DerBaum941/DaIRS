@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom"
 
 const Table = (props) => {
   return (
@@ -7,7 +8,7 @@ const Table = (props) => {
         {props.headers !== undefined && props.headers.map((entry, index) => (<div key={index}>{entry}</div>))}
       </div>
 
-      {props.data !== null &&
+      {props.data !== null && props.nameLinks === false &&
         props.data.map((entry, index) => (
             <div key={index} className="LeaderboardRow">
               <div>{entry.name}</div>
@@ -16,6 +17,17 @@ const Table = (props) => {
               {entry.used !== undefined && <div>{entry.used}</div>}
               {entry.active !== undefined && <div>{entry.active}</div>}
             </div>
+        ))}
+
+      {props.data !== null && props.nameLinks === true &&
+        props.data.map((entry, index) => (
+          <div key={index} className="LeaderboardRow">
+            <Link to={`/profile/${entry.name}`}>{entry.name}</Link>
+            {entry.description !== undefined && <div>{entry.description}</div>}
+            {entry.value !== undefined && <div>{entry.value}</div>}
+            {entry.used !== undefined && <div>{entry.used}</div>}
+            {entry.active !== undefined && <div>{entry.active}</div>}
+          </div>
         ))}
 
       {props.connected === false && <p>Couldn't fucking get stats grr.</p>}
