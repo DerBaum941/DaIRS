@@ -1,11 +1,9 @@
-import React from "react"
-import axios from "axios"
+import React from "react";
+import axios from "axios";
 import Table from './Table';
 
+import '../../styles/Leaderboard.scss';
 import conf from '../../../../../conf/general.json';
-
-import '../../styles/Leaderboard.scss'
-
 
 class Taxes extends React.Component {
   
@@ -49,4 +47,4 @@ class Taxes extends React.Component {
   }
 }
 
-export default Taxes
+export default Taxes;

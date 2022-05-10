@@ -1,12 +1,11 @@
-import React from "react"
-import { NavLink } from "react-router-dom"
+import React from "react";
+import { NavLink } from "react-router-dom";
 
-import Carrd  from "../assets/Carrd.png"
-import Tiktok from "../assets/Tiktok.png"
-import Twitch from "../assets/Twitch.png"
-import Twitter from "../assets/Twitter.png"
-
-import '../styles/Header.scss'
+import '../styles/Header.scss';
+import Carrd  from '../assets/Carrd.png';
+import Tiktok from '../assets/Tiktok.png';
+import Twitch from '../assets/Twitch.png';
+import Twitter from '../assets/Twitter.png';
 
 const Header = () => {
   return (
@@ -21,7 +20,7 @@ const Header = () => {
         <NavLink to="stats">Statssssss</NavLink>
 
         {/* Add a component that advertises all of her socials too */}
-        <NavLink to="/">Shilling</NavLink> 
+        <NavLink to="/shilling">Shilling</NavLink> 
       </div>
 
       <div className="NavSocials">
@@ -42,4 +41,4 @@ const Header = () => {
   )
 }
 
-export default Header
+export default Header;

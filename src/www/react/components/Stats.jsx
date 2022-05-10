@@ -1,15 +1,15 @@
-import React from 'react';
+import React from "react";
 import { Routes, Route, NavLink, Navigate } from "react-router-dom";
 
-import StatsHome from './stats/StatsHome';
-import Taxes from "./stats/Taxes";
-import Commands from "./stats/Commands";
-import Redeems from "./stats/Redeems";
+import '../styles/Stats.scss';
+import Commands from './stats/Commands';
 import Evaders from './stats/Evaders';
-import "../styles/Stats.scss";
+import Redeems from './stats/Redeems';
+import StatsHome from './stats/StatsHome';
+import Taxes from './stats/Taxes';
 
 const Stats = () => {
-  return( 
+  return ( 
     <main className="Stats">
 
       <div className="StatsMain">
@@ -36,4 +36,4 @@ const Stats = () => {
   )
 }
 
-export default Stats
+export default Stats;

@@ -1,9 +1,9 @@
-import React from 'react'
-import axios from "axios"
-import Table from './Table';
+import React from "react";
+import axios from "axios";
 
-import '../../styles/Leaderboard.scss'
+import '../../styles/Leaderboard.scss';
 import conf from '../../../../../conf/general.json';
+import Table from './Table';
 
 class Commands extends React.Component {
   
@@ -48,4 +48,4 @@ class Commands extends React.Component {
   }
 }
 
-export default Commands
+export default Commands;

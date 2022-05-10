@@ -1,6 +1,7 @@
-import React from "react"
-import '../styles/Home.scss'
-import Gremlin from '../assets/DaiDegen.jpg'
+import React from "react";
+
+import '../styles/Home.scss';
+import Gremlin from '../assets/DaiDegen.jpg';
 
 const Home = () => {
   return (
@@ -14,4 +15,4 @@ const Home = () => {
   )
 }
 
-export default Home
+export default Home;

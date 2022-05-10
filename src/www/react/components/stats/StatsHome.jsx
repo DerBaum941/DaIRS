@@ -1,5 +1,6 @@
-import React from "react"
-import '../../styles/Leaderboard.scss'
+import React from "react";
+
+import '../../styles/Leaderboard.scss';
 
 
 const StatsHome = () => {
@@ -10,4 +11,4 @@ const StatsHome = () => {
   )
 }
 
-export default StatsHome
+export default StatsHome;

@@ -1,11 +1,10 @@
-import React from "react"
-import axios from "axios"
-import { useParams, NavLink } from "react-router-dom"
-import UserCard from "./UserCard"
+import React from "react";
+import axios from "axios";
+import { useParams, NavLink } from "react-router-dom";
+
+import '../../styles/Leaderboard.scss';
 import conf from '../../../../../conf/general.json';
-
-
-import '../../styles/Leaderboard.scss'
+import UserCard from './UserCard';
 
 // Wrapper function component so url params can be parsed
 const withRouter = WrappedComponent => props => {
@@ -21,6 +20,7 @@ const withRouter = WrappedComponent => props => {
 
 
 class Profile extends React.Component {
+
   state = {
     data: []
   }
@@ -52,4 +52,4 @@ class Profile extends React.Component {
   }
 }
 
-export default withRouter(Profile)
+export default withRouter(Profile);

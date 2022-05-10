@@ -1,5 +1,6 @@
-import React from "react"
-import '../styles/Footer.scss'
+import React from "react";
+
+import '../styles/Footer.scss';
 
 const Footer = () => {
   return (
@@ -13,4 +14,4 @@ const Footer = () => {
   )
 }
 
-export default Footer
+export default Footer;

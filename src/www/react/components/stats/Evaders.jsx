@@ -1,11 +1,9 @@
-import React from "react"
-import axios from "axios"
-import Table from './Table';
+import React from "react";
+import axios from "axios";
 
+import '../../styles/Leaderboard.scss';
 import conf from '../../../../../conf/general.json';
-
-import '../../styles/Leaderboard.scss'
-
+import Table from './Table';
 
 class Evaders extends React.Component {
 
@@ -50,4 +48,4 @@ class Evaders extends React.Component {
   }
 }
 
-export default Evaders
+export default Evaders;

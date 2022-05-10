@@ -1,5 +1,6 @@
-import React from "react"
-import '../../styles/Profile.scss'
+import React from "react";
+
+import '../../styles/Profile.scss';
 
 class UserCard extends React.Component {
   constructor (props) {
@@ -77,4 +78,4 @@ class UserCard extends React.Component {
   )}
 }
 
-export default UserCard
+export default UserCard;

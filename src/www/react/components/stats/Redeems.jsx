@@ -1,9 +1,9 @@
-import React from 'react'
-import axios from "axios"
-import Table from './Table';
+import React from "react";
+import axios from "axios";
 
-import '../../styles/Leaderboard.scss'
+import '../../styles/Leaderboard.scss';
 import conf from '../../../../../conf/general.json';
+import Table from './Table';
 
 class Redeems extends React.Component {
   
@@ -47,4 +47,4 @@ class Redeems extends React.Component {
   }
 }
 
-export default Redeems
+export default Redeems;
