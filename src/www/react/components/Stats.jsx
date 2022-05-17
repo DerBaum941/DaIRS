@@ -7,6 +7,7 @@ import Evaders from './stats/Evaders';
 import Redeems from './stats/Redeems';
 import StatsHome from './stats/StatsHome';
 import Taxes from './stats/Taxes';
+import Messages from './stats/Messages';
 
 const Stats = () => {
   return ( 
@@ -17,8 +18,9 @@ const Stats = () => {
           {/* <NavLink strict to="/stats">Houm</NavLink> */}
           <NavLink to="/stats/commands">Commands</NavLink>
           <NavLink to="/stats/taxes">Taxes</NavLink>
-          <NavLink to="/stats/redeems">Redeems</NavLink>
           <NavLink to="/stats/evaders">Evaders</NavLink>
+          <NavLink to="/stats/redeems">Redeems</NavLink>
+          <NavLink to="/stats/messages">Messages</NavLink>
         </nav>
         
         <div className="StatsBody">
@@ -26,8 +28,9 @@ const Stats = () => {
             <Route index element = {<StatsHome /> } />
             <Route path="/commands" element = {<Commands />} />
             <Route path="/taxes" element = {<Taxes />} />
-            <Route path="/redeems" element = {<Redeems />} />
             <Route path="/evaders" element = {<Evaders />} />
+            <Route path="/redeems" element = {<Redeems />} />
+            <Route path="/messages" element = {<Messages />} />
             <Route path="/*" element = {<Navigate to ="/stats" />} />
           </Routes>
         </div>
