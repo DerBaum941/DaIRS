@@ -42,7 +42,7 @@ class Evaders extends React.Component {
     return (
       <div className="Evaders Leaderboard Main">
         <input placeholder='Search term' type="text" onChange={(e) => this.searchTerm(e.target.value)}/>
-        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Evading"]} nameLinks = {true}/>
+        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Evading since"]} nameLinks = {true}/>
       </div>
     )
   }
