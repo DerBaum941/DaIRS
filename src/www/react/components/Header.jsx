@@ -20,6 +20,7 @@ const Header = () => {
         <NavLink to="stats">Stats</NavLink>
         {/* Add a component that advertises all of her socials too */}
         <NavLink to="/shilling">Shilling</NavLink>
+        <NavLink to="/profile">Search</NavLink>
       </div>
 
       <div className="NavSocials">

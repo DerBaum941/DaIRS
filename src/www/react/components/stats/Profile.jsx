@@ -18,15 +18,21 @@ const withRouter = WrappedComponent => props => {
   );
 };
 
-
 class Profile extends React.Component {
 
   state = {
-    data: []
+    data: [],
+    search: null
   }
 
-  componentDidMount = () => {
-    axios.get(`${conf.www.host}/api/v1/user/${this.props.params.username}`)
+  searchTerm = (search) => {
+    search.length !== 0 ? this.setState({search}) : this.setState({search: conf.twitch.channel})
+  }
+
+  searchProfile = (e, user) => {
+    e.preventDefault()
+    if (user === null) return
+    axios.get(`${conf.www.host}/api/v1/user/${user}`)
     .then((res) => {
       this.setState({data: res.data})
     })
@@ -36,10 +42,31 @@ class Profile extends React.Component {
     })
   }
 
+  getStats = (user) => {
+    axios.get(`${conf.www.host}/api/v1/user/${user}`)
+    .then((res) => {
+      this.setState({data: res.data})
+    })
+    .catch((err) => {
+      this.setState({data: "Username not found."})
+      console.log(err);
+    })
+  }
+
+  componentDidMount = () => {
+    this.props.params.username ? this.getStats(this.props.params.username) : this.getStats(conf.twitch.channel)
+  }
+
   render() {
     return (
       <main className="Profile">
         <NavLink to='/stats'> Back to Stats </NavLink>
+
+        <form onSubmit={(e) => this.searchProfile(e, this.state.search)}>
+          <input placeholder='Search term' type="text" onChange={(e) => this.searchTerm(e.target.value)} />
+          <button type="submit">Search</button>
+        </form>
+
         <div className="UserCards">
           <UserCard data={this.state.data} />
         </div>

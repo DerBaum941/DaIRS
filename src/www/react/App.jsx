@@ -25,6 +25,8 @@ export default () => (
 
           <Route path = "profile/:username" element = {<Profile />} />
 
+          <Route path = "profile" element = {<Profile />} />
+
           {/* Default route that redirects back to root */}
           <Route path="*" element = {<Navigate to ="/" replace />} />
         </Routes>

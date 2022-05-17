@@ -1,6 +1,7 @@
 @import "./Variables";
 
 .Profile {
+  
   margin: auto;
   display: flex;
   align-items: center;
@@ -87,5 +88,38 @@
     font-size: 20px;
     padding: 0px;
     margin: 10px 5px;
+  }
+}
+
+form {
+  width: 30%;
+  height: 40px;
+  border-radius:20px;
+  background-color: $primary;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: $text;
+  margin: 20px 0px;
+  border: 1px solid $highlight;
+}
+
+button {
+  height: 40px;
+  border-radius:20px;
+  width: 100px;
+  background-color: $secondary;
+  border: 1px solid $highlight;
+  color: $text;
+}
+
+input {
+  color: $text;
+  background-color: transparent;
+  border: none;
+  margin-left: 10px;
+  &:focus {
+    outline: none;
   }
 }
