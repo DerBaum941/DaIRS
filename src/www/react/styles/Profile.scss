@@ -21,10 +21,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: $transition-short;
 
     &:hover {
       background-color: $highlight;
-      transition: all 0.2s ease-in-out;
     }
   }
 }
@@ -96,13 +96,16 @@ form {
   height: 40px;
   border-radius:20px;
   background-color: $primary;
-  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   color: $text;
   margin: 20px 0px;
   border: 1px solid $highlight;
+
+  input {
+    flex-grow: 1;
+  }
 }
 
 button {
@@ -112,13 +115,22 @@ button {
   background-color: $secondary;
   border: 1px solid $highlight;
   color: $text;
+  transition: $transition-short;
+  font-size: 20px;
+
+  &:hover {
+    background-color: $highlight;
+  }
 }
 
 input {
+  font-size: 20px;
+  height: 40px;
   color: $text;
   background-color: transparent;
   border: none;
   margin-left: 10px;
+
   &:focus {
     outline: none;
   }

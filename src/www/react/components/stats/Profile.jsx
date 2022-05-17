@@ -22,7 +22,8 @@ class Profile extends React.Component {
 
   state = {
     data: [],
-    search: null
+    search: null,
+    error: false
   }
 
   searchTerm = (search) => {
@@ -31,25 +32,23 @@ class Profile extends React.Component {
 
   searchProfile = (e, user) => {
     e.preventDefault()
-    if (user === null) return
     axios.get(`${conf.www.host}/api/v1/user/${user}`)
     .then((res) => {
-      this.setState({data: res.data})
+      this.setState({data: res.data, error: false})
     })
     .catch((err) => {
-      this.setState({data: "Username not found."})
-      console.log(err);
+      this.setState({error: true})
     })
   }
 
   getStats = (user) => {
+    if (!user) return
     axios.get(`${conf.www.host}/api/v1/user/${user}`)
     .then((res) => {
-      this.setState({data: res.data})
+      this.setState({data: res.data, error: false})
     })
     .catch((err) => {
-      this.setState({data: "Username not found."})
-      console.log(err);
+      this.setState({error: true})
     })
   }
 
@@ -66,6 +65,12 @@ class Profile extends React.Component {
           <input placeholder='Search term' type="text" onChange={(e) => this.searchTerm(e.target.value)} />
           <button type="submit">Search</button>
         </form>
+        {this.state.error === true &&
+          <p>
+            Username not found. Please try searching again.
+          </p>
+        }
+
 
         <div className="UserCards">
           <UserCard data={this.state.data} />

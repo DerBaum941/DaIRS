@@ -28,11 +28,12 @@ align-items: center;
       justify-content: center;
       text-align: center;
       padding: 10px;
+
+      transition: $transition-short;
     }
 
     a:hover{
       color: $highlight;
-      transition: all 0.2s ease-in-out;
     }
 
 

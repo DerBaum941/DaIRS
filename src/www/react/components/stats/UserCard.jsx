@@ -2,6 +2,16 @@ import React from "react";
 
 import '../../styles/Profile.scss';
 
+
+/*
+TODO
+
+Fade in does not work with the current implementation of Usercard.jsx and Profile.jsx, because it technically always has data.
+
+Find a way around it.
+
+*/
+
 class UserCard extends React.Component {
   constructor (props) {
     super(props)
@@ -23,8 +33,8 @@ class UserCard extends React.Component {
         <div className="UserCardHeader">
           {
             this.state.dataLoaded === true && [
-              <img key={10} src={this.props.data.avatar} alt="" />,
-              <p key={11}>{this.props.data.name}</p>
+              <img key={11} src={this.props.data.avatar} alt="" />,
+              <p key={12}>{this.props.data.name}</p>
             ]}
         </div>
 

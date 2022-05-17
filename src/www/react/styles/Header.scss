@@ -17,7 +17,7 @@ header {
   .NavButtons {
     a {
       font-size: 20px;
-
+      transition: $transition-short;
     }
 
     * {
@@ -27,7 +27,6 @@ header {
 
       &:hover {
         border-top-color: $highlight;
-        transition: all 0.2s ease-in-out;
      }
     }
   }

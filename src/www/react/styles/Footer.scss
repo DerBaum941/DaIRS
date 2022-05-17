@@ -6,8 +6,11 @@ footer {
   align-items: center;
   letter-spacing: 1px;
 
+  a {
+    transition: $transition-short;
+  }
+
   a:hover {
     color: $highlight;
-    transition: all 0.2s ease-in-out;
   }
 }
