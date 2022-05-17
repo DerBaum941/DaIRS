@@ -6,13 +6,19 @@ const main = require('./src/common/index');
 main.Init(conf);
 
 /** TODO
+ * Total Tax command (per user and sum total) ->Done
+ * Redeem stat tracker (Name into DB, but update every time) ->Done
+ * Re-register discord commands regularly ->Done
+ * API endpoint for redeem tracker ->Done
+ * 
  * Move strings to config file
  * Add shoutout command | (@user) regex in config file
  * Add some more regular logging 
- * Health checks??
- * Re-register discord commands regularly ->Done
- * Build the twitter Integration fully
- * Total Tax command (per user and sum total) ->Done
- * Redeem stat tracker (Name into DB, but update every time) ->Done
- * API endpoint for redeem tracker ->Done
+ * Build the twitter Integration fully ->Optional
+ * 
+ * Add new endpoint for aggregate redeem_records by uid
+ * Track first redeems, with streak count cuz why not :)
+ * Add raffle feature, ?raffle start|end|join
+ * Add point raffle feature, by name =="raffle" ?pointraffle
+ * Move link stat event into the request instead of whisper
  */

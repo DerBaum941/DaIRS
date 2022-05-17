@@ -21,7 +21,6 @@ npm install
 npm run build
 #Open Ports
 #ufw allow 9090
-#ufw allow 3000
 
 #add service user
 useradd dairs

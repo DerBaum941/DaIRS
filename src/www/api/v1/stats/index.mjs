@@ -21,7 +21,7 @@ async function topPoints(page) {
 }
 
 //Redeem Count info
-const getTopRedeems = cm.db.prepare("SELECT userID, numRedeems AS value FROM stats_redeems_got ORDER BY value DESC LIMIT ? OFFSET ?");
+const getTopRedeems = cm.db.prepare("SELECT userID, sumTotal AS value FROM stats_redeems_got ORDER BY value DESC LIMIT ? OFFSET ?");
 async function topRedeems(page) {
     const result = getTopRedeems.all(PAGE_SIZE, (page-1)*PAGE_SIZE);
     const lb = await cm.parseResult(result, PAGE_SIZE);
