@@ -70,8 +70,13 @@ class UserCard extends React.Component {
 
             this.props.data.linksRequested !== 0 &&
             <p key={9}>
-              No. of links mods had to suffer through: this.props.data.linksRequested
-            </p>          
+              No. of links mods had to suffer through: {this.props.data.linksRequested}
+            </p>,
+
+            this.props.data.msgSent !== 0 &&
+            <p key={10}>
+              Messages sent in Daishu's chat: {this.props.data.msgSent}
+            </p>
           ]}
         </div>
     </div>

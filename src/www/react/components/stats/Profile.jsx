@@ -40,10 +40,6 @@ class Profile extends React.Component {
     return (
       <main className="Profile">
         <NavLink to='/stats'> Back to Stats </NavLink>
-        <p>
-          Hello, below you can find all of the relevant stats for the channel.
-        </p>
-
         <div className="UserCards">
           <UserCard data={this.state.data} />
         </div>
