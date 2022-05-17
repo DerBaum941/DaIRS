@@ -8,8 +8,7 @@ const Home = () => {
     <main className="Home">
       <img src={Gremlin}/>
       <p>
-        [WIP] <br />
-        Welcome to the humble DaIRS abode. Here you can see stats, enabled commands for the bot, and other shit.
+        Welcome to the humble DaIRS abode. Here you can see stats, enabled commands for the bot, and other crimes you have committed.
       </p>
     </main>
   )

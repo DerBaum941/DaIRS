@@ -17,7 +17,7 @@ const Header = () => {
       <div className="NavButtons">
         <NavLink to="/">Home</NavLink>
         {/* <NavLink to="login">Sell Data</NavLink> */}
-        <NavLink to="stats">Statssssss</NavLink>
+        <NavLink to="stats">Stats</NavLink>
 
         {/* Add a component that advertises all of her socials too */}
         <NavLink to="/shilling">Shilling</NavLink> 
@@ -28,13 +28,13 @@ const Header = () => {
           <img src={Carrd} alt="Carrd.png" />
         </a>
         <a target="_blank" href="https://www.tiktok.com/@daishutv">
-          <img src={Tiktok} alt="Carrd.png" />
+          <img src={Tiktok} alt="Tiktok.png" />
         </a>
         <a target="_blank" href="https://www.twitch.tv/daishuTV">
-          <img src={Twitch} alt="Carrd.png" />
+          <img src={Twitch} alt="Twitch.png" />
         </a>
         <a target="_blank" href="https://twitter.com/daishuquee">
-          <img src={Twitter} alt="Carrd.png" />
+          <img src={Twitter} alt="Twitter.png" />
         </a>
       </div>
     </header>

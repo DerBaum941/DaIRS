@@ -30,6 +30,11 @@ align-items: center;
       padding: 10px;
     }
 
+    a:hover{
+      color: $highlight;
+      transition: all 0.2s ease-in-out;
+    }
+
 
     div {
       display: flex;

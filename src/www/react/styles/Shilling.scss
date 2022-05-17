@@ -1,0 +1,56 @@
+@import "./Variables";
+
+.Shilling {
+  // * {
+  //   border: 1px solid white;
+  // }
+
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+
+  h1 {
+    letter-spacing: 1px;
+  }
+}
+
+.ShillCards {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  width: 80%;
+}
+
+
+.ShillCard {
+  -webkit-box-shadow: $shadow;
+  -moz-box-shadow: $shadow;
+  box-shadow: $shadow;
+  
+  background-color: $secondary;
+
+  border-radius: 5px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0px 20px;
+  margin: 20px;
+
+  font-size: 24px;
+  width: 70%;
+
+  &:hover {
+    background-color: $secondary-light;
+    transition: all 0.2s ease-in-out;
+  }
+
+  img {
+    filter: invert(100%) sepia(50%) saturate(0%) hue-rotate(323deg) brightness(106%) contrast(101%); //Because changing the color in photoshop is way too much of a hassle. 
+  }
+
+  img, div {
+    width: 40px;
+  }
+}
