@@ -1,5 +1,13 @@
+@import './Variables';
+
 footer {
   display: flex;
   justify-content: center;
   align-items: center;
+  letter-spacing: 1px;
+
+  a:hover {
+    color: $highlight;
+    transition: all 0.2s ease-in-out;
+  }
 }

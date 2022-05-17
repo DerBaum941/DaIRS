@@ -1,13 +1,62 @@
+@import "./Variables";
+
 .Leaderboard {
 display: flex;
 flex-direction: column;
 padding: 10px 20px;
+height: 100%;
+width: 100%;
+margin-top: 30px;
+align-items: center;
 
- .LeaderboardRow {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: 1fr;
-  grid-column-gap: 20px;
-  grid-row-gap: 20px;
- }
+  .LeaderboardRow:nth-child(2n) {
+    background-color: transparent;
+  }
+
+  .LeaderboardRow {
+    background-color: rgba($color: #000000, $alpha: 0.2);
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-column-gap: 20px;
+    grid-row-gap: 20px;
+
+    width: 100%;
+
+    a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 10px;
+    }
+
+
+    div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 10px;
+    }
+  }
+
+  input {
+    width: 30%;
+    height: 40px;
+    border-radius:20px;
+    background-color: $primary;
+    border: none;
+    padding: 0px 30px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin: 20px 0px;
+    border: 1px solid $highlight;
+
+    &:focus {
+      outline: none;
+    }
+  }
 }

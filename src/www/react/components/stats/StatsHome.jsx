@@ -1,13 +1,14 @@
-import React from "react"
-import '../../styles/Leaderboard.scss'
+import React from "react";
+
+import '../../styles/Leaderboard.scss';
 
 
 const StatsHome = () => {
   return (
-    <main className="StatsHome ">
-      Bla
-    </main>
+    <div className="StatsHome Main">
+      Have some stats, bitch. Pick one of the available tabs.
+    </div>
   )
 }
 
-export default StatsHome
+export default StatsHome;

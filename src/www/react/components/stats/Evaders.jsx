@@ -5,8 +5,8 @@ import '../../styles/Leaderboard.scss';
 import conf from '../../../../../conf/general.json';
 import Table from './Table';
 
-class Redeems extends React.Component {
-  
+class Evaders extends React.Component {
+
   state = {
     data: [],
     search: null,
@@ -14,9 +14,10 @@ class Redeems extends React.Component {
   }
 
   fetchData = () => {
-    axios.get(`${conf.www.host}/api/v1/stats/redeems/`)
+    axios.get(`${conf.www.host}/api/v1/stats/streak/`)
     .then((res) => {
-      this.setState({data: res.data, connected: true})
+
+      this.setState({data: res.data.filter( el => el.active !== "Still active")})
     })
     .catch((err) => {
       this.setState({connected: false})
@@ -37,14 +38,14 @@ class Redeems extends React.Component {
     return this.state.data.filter(e => e.name.toLowerCase().includes(this.state.search.toLowerCase()))
   }
 
-  render () {
+  render() {
     return (
-      <div className="Redeems Leaderboard Main">
+      <div className="Evaders Leaderboard Main">
         <input placeholder='Search term' type="text" onChange={(e) => this.searchTerm(e.target.value)}/>
-        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Value"]} nameLinks = {true}/>
+        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Evading"]} nameLinks = {true}/>
       </div>
     )
   }
 }
 
-export default Redeems;
+export default Evaders;

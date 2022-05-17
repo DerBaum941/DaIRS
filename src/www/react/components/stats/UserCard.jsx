@@ -1,5 +1,6 @@
-import React from "react"
-import '../../styles/Profile.scss'
+import React from "react";
+
+import '../../styles/Profile.scss';
 
 class UserCard extends React.Component {
   constructor (props) {
@@ -64,7 +65,7 @@ class UserCard extends React.Component {
 
             this.props.data.redeemsGot !== null &&
             <p key={8}>
-              Redeems fulfilled from Daishu: {this.props.data.redeemsGot}
+              Redeems fulfilled by Daishu: {this.props.data.redeemsGot}
             </p>,
 
             this.props.data.linksRequested !== 0 &&
@@ -77,4 +78,4 @@ class UserCard extends React.Component {
   )}
 }
 
-export default UserCard
+export default UserCard;

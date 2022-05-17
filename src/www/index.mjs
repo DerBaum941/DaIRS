@@ -25,8 +25,8 @@ const options = {
 };
 
 var corsOptions = {
-  origin: cnf.host,
-  optionsSuccessStatus: 200 
+  origin: cnf.cors_allowed_domains,
+  optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
 

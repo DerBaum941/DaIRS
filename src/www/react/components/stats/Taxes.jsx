@@ -1,48 +1,50 @@
-import React from "react"
-import axios from "axios"
-import { Link } from "react-router-dom"
+import React from "react";
+import axios from "axios";
+import Table from './Table';
+
+import '../../styles/Leaderboard.scss';
 import conf from '../../../../../conf/general.json';
 
-import '../../styles/Leaderboard.scss'
-
-
 class Taxes extends React.Component {
-
+  
   state = {
     data: [],
+    search: null,
     connected: true
   }
 
-  componentDidMount = () => {
+  fetchData = () => {
     axios.get(`${conf.www.host}/api/v1/stats/streak/`)
-      .then((res) => {
-        this.setState({data: res.data, connected: true})
-      })
-      .catch((err) => {
-        this.setState({connected: false})
-        console.log(err);
-      })
+    .then((res) => {
+      this.setState({data: res.data, connected: true})
+    })
+    .catch((err) => {
+      this.setState({connected: false})
+      console.log(err);
+    })
+  }
+
+  componentDidMount = () => {
+    this.fetchData()
+  }
+
+  searchTerm = (search) => {
+    search.length !== 0 ? this.setState({search}) : this.setState({search: null})
+  }
+
+  searchData = () => {
+    if (this.state.search === null) return this.state.data
+    return this.state.data.filter(e => e.name.toLowerCase().includes(this.state.search.toLowerCase()))
   }
 
   render() {
     return (
       <div className="Taxes Leaderboard Main">
-        <div className="Taxes LeaderboardRow">
-          <div>Name</div>
-          <div>Streak</div>
-          <div>Last Active</div>
-        </div>
-        {this.state.data.map((entry, index) => (
-          <div key={index} className="Taxes LeaderboardRow">
-            <Link to={`/profile/${entry.name}`}> {entry.name} </Link>
-            <div>{entry.value}</div>
-            <div>{entry.active}</div>
-          </div>
-        ))}
-        {this.state.connected ? "" : "Couldn't fucking get stuff"}
+        <input placeholder='Search term' type="text" onChange={(e) => this.searchTerm(e.target.value)}/>
+        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Streak", "Tax Streak"]} nameLinks = {true}/>
       </div>
     )
   }
 }
 
-export default Taxes
+export default Taxes;

@@ -2,11 +2,13 @@
 
 header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   background-color: $secondary;
   border-radius: 5px;
+  padding: 0px 40px;
   height: 60px;
+  margin-bottom: 20px;
 
   -webkit-box-shadow: $shadow;
   -moz-box-shadow: $shadow;
@@ -15,6 +17,7 @@ header {
   .NavButtons {
     a {
       font-size: 20px;
+
     }
 
     * {
@@ -27,5 +30,24 @@ header {
         transition: all 0.2s ease-in-out;
      }
     }
- }
+  }
+
+  .NavSocials {
+    a {
+      margin: 0px 5px;
+    }
+    img {
+      height: 20px;
+      width: auto;
+      filter: invert(100%) sepia(50%) saturate(0%) hue-rotate(323deg) brightness(106%) contrast(101%); //Because changing the color in photoshop is way too much of a hassle. 
+    }
+  }
+
+  .NavHome, .NavSocials {
+    width: 150px;
+  }
+
+  .NavHome {
+    font-size: 30px;
+  }
 }

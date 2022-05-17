@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 const UserPage = (props) => {
   return (
@@ -13,4 +13,4 @@ const UserPage = (props) => {
   )
 }
 
-export default UserPage
+export default UserPage;
