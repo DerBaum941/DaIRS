@@ -19,7 +19,7 @@ Read up on all Types used in responses
         totalRedeems, *Number?: Total number of times they got the Streak Reedeem*
         msgSent, *Number: How many messages the User sent*
         pointsSpent, *Number: How many Points the User spent*
-        redeemsGot, *Number: How many Redeems they received*
+        redeemsGot, *Number: How many Points they spent on Redeems*
         linksRequested *Number: How many Links they requested*
     }
 
