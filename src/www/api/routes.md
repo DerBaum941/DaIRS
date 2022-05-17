@@ -71,7 +71,7 @@ Read up on all Types used in responses
 ### Stats Endpoints
 
 All of the following stats endpoints may be trailed with a page number e.g. [...]**/2**  
-A page **always** contains 20 Rows, the count starts at /1  
+A page **always** contains 100 Rows, the count starts at /1  
 Fetching an "Out of bounds" Page will return an empty array  
 
 #### **List Route: Streak Stats /api/v1/stats/streak/**
