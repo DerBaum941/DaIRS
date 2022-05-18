@@ -21,7 +21,7 @@ class UserCard extends React.Component {
   }
 
   componentDidUpdate = (props) => {
-    if (props.data !== this.props.data && this.props.data !== undefined)
+    if (props.data !== this.props.data && this.props.data !== undefined && this.props.data !== null)
     this.setState({
       dataLoaded: true
     })

@@ -14,7 +14,7 @@ class Evaders extends React.Component {
   }
 
   fetchData = () => {
-    axios.get(`${conf.www.host}/api/v1/stats/streak/`)
+    axios.get(`${conf.www.host}/api/v1/stats/evaders/`)
     .then((res) => {
 
       this.setState({data: res.data.filter( el => el.active !== "Still active")})
@@ -42,7 +42,7 @@ class Evaders extends React.Component {
     return (
       <div className="Evaders Leaderboard Main">
         <input placeholder='Search term' type="text" onChange={(e) => this.searchTerm(e.target.value)}/>
-        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Evading since"]} nameLinks = {true}/>
+        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Last Streak", "Evading since"]} nameLinks = {true}/>
       </div>
     )
   }
