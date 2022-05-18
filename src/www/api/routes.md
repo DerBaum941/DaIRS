@@ -80,6 +80,13 @@ For past streaks, "active" will display the last Day of the Streak, in ISO Forma
 For ongoing streaks, "active" will say "Still active"  
 @returns: \[StreaksRow]
 
+#### **List Route: Evader Stats /api/v1/stats/evaders/**
+
+Gives a Leaderboard of the people who currently do NOT have a redeem streak.
+"active" represents the Date of the last time their streak has ended.
+The view is sorted by highscore / value.
+@returns: \[StreaksRow]
+
 #### **List Route: Command Stats /api/v1/stats/commands/**
 
 Retrieves a sorted array of the most used Commands  
