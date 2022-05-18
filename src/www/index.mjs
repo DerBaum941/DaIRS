@@ -41,9 +41,6 @@ app.use('/mod', dashboard.default);
 //Giving it the User Token
 app.use('/auth', oauthApp.router);
 
-//Make assets url-able
-app.use('/files', Express.static(path.join(__dirname, 'static/assets'), options));
-
 //Main Landing page
 app.use('/', Express.static(path.join(__dirname, 'static'), options));
 
