@@ -6,6 +6,9 @@ import https from 'https';
 import { randomBytes } from 'crypto';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const confpath = path.resolve('./conf/general.json');
 const conf = JSON.parse(fs.readFileSync(confpath, 'utf8'));
@@ -96,7 +99,7 @@ router.use((req, res, next) => {
   });
 
 router.get('/', (req, res) => {
-    res.sendFile('/index.html');
+    res.sendFile(path.join(__dirname, 'index.html'));
 })
 //Subroutes
 //router.use('/v1/user', routesV1.user);
