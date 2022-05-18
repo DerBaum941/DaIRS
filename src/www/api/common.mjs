@@ -47,7 +47,7 @@ const getBest = db.prepare("SELECT userID, streakCount, achievedAt FROM twitch_r
 const getTop = db.prepare("SELECT userID, streakCount FROM twitch_redeem_streak ORDER BY streakCount DESC");
 
 var tableCache = null;
-const cache_ttl = 180; //Cache lifetime in seconds
+const cache_ttl = 30; //Cache lifetime in seconds
 function getLB_Table()  {
     if (!tableCache) {
         var r1 = getTop.all();
