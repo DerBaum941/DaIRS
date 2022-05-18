@@ -21,9 +21,10 @@ CREATE TABLE IF NOT EXISTS twitch_redeem_records (
     streakCount INTEGER NOT NULL,
     achievedAt TEXT NOT NULL
 );
+DROP TRIGGER IF EXISTS save_redeem_records_stats;
 CREATE TRIGGER IF NOT EXISTS save_redeem_records_stats
     AFTER UPDATE ON twitch_redeem_streak
-    WHEN NEW.streakCount = 0
+    WHEN NEW.streakCount = 0 AND OLD.streakCount > 0
     BEGIN
         INSERT INTO twitch_redeem_records(userID, streakCount, achievedAt)
             VALUES(OLD.userID, OLD.streakCount, date('now'));
