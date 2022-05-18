@@ -66,18 +66,29 @@ function redeemsUsed(page) {
 const getEvaderList = cm.db.prepare(
   `SELECT *
     FROM 
-      (SELECT s.userID AS userID, r.streakCount AS value, r.achievedAt AS active
+      (SELECT s.userID AS userID, r.streakCount AS value, r.achievedAt AS date
         FROM twitch_redeem_streak s, twitch_redeem_records r
         WHERE s.userID = r.userID AND s.streakActive = 0
         ORDER BY r.achievedAt DESC)
     GROUP BY userID
     ORDER BY value DESC
     LIMIT ? OFFSET ?;`);
-function evaderLB(page) {
+async function evaderLB(page) {
     const result = getEvaderList.all(PAGE_SIZE, (page-1)*PAGE_SIZE);
+    var lb = [];
     if (result.length == 0)
-      return [];
-    return result;
+      return lb;
+    for(let i = 0; i < result.length; i++) {
+      let row = result[i];
+      const usr = await cm.getUserInfoID(row.userID);
+      lb.push({
+        name: usr.displayName,
+        value: row.value,
+        active: row.date
+      });
+    }
+    lb.sort((a,b)=> b.value-a.value);
+    return lb;
 }
 
 router.get('/triggers/:page?', (req, res) => {
@@ -120,9 +131,9 @@ router.get('/redeemuse/:page?', (req, res) => {
   const lb = redeemsUsed(page);
   return res.status(200).json(lb);
 });
-router.get('/evaders/:page?', (req, res) => {
+router.get('/evaders/:page?', async (req, res) => {
   const page = req.params.page || 1;
-  const lb = evaderLB(page);
+  const lb = await evaderLB(page);
   return res.status(200).json(lb);
 });
 
