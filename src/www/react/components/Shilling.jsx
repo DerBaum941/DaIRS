@@ -13,7 +13,7 @@ const Shilling = () => {
   return (
     <main className="Shilling">
       <h1>
-        GREMLIN SOUL BUT TWITCH V-BNUI AT HEART
+        GREMLIN SOUL BUT TWITCH V-BNUY AT HEART
       </h1> 
       <div className="ShillCards">
         <a className="ShillCard" href="https://daishuquee.carrd.co/" target="_blank">

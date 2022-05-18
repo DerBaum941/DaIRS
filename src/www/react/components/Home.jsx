@@ -11,7 +11,8 @@ const Home = () => {
       </p>
       <img src={Gremlin}/>
       <p style= {{fontSize: 15}}>
-        DISCLAIMER: The contents of this website are satire and jokes between Daishu and her chat. Do not take them seriously.
+        DISCLAIMER: The contents of this website are satire and jokes between Daishu and her chat. Do not take them seriously. <br /> <br />
+        DISCLAIMER 2: The contents of this website are designed for desktop viewing and might not look good on mobile as of yet.
       </p>
     </main>
   )
