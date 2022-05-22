@@ -152,6 +152,7 @@ async function leaderBoard(numRows) {
     var LB = [];
     for(let i = 0; i < table.length; i++) {
         let row = table[i];
+        if (row.streakCount == 0) continue;
         const user = await Getters.getUserInfoID(row.userID);
         LB.push({
             name: user.displayName,

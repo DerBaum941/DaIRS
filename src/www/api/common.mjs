@@ -52,7 +52,7 @@ function getLB_Table()  {
     if (!tableCache) {
         var r1 = getTop.all();
         var r2 = getBest.all();
-        tableCache = [...r1, ...r2].sort((a,b)=>b.streakCount-a.streakCount);
+        tableCache = [...r1, ...r2].sort((a,b)=>b.streakCount-a.streakCount).filter(row => row.streakCount > 0);
         setTimeout(()=>{tableCache = null;},cache_ttl*1000)
     }
     return tableCache;
