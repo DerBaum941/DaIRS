@@ -93,7 +93,7 @@ exports.twitchCallback = async (Emitter, Clients, ch, chatPerson, choice, args, 
 
     //Leaderboard
     if (!args) {
-        const lb = await leaderBoard(3);
+        const lb = await leaderBoard(5);
         if(lb.length == 0) {
             Clients.twitch.chat.say(ch, "There are currently no streak records set.", {replyTo: msgObj});
             return;
@@ -161,7 +161,7 @@ async function leaderBoard(numRows) {
     }
     LB.sort((a,b)=> b.streak-a.streak );
 
-    LB = LB.slice(0, Math.min(LB.length, numRows-1));
+    LB = LB.slice(0, Math.min(LB.length, numRows));
 
     return LB;
 }
