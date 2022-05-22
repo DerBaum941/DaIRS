@@ -8,6 +8,7 @@ import Twitter from '../assets/Twitter.png';
 import Youtube from '../assets/Youtube.png';
 import Pixiv from '../assets/Pixiv.png';
 import Patreon from '../assets/Patreon.png';
+import Etsy from '../assets/Etsy.png'
 
 const Shilling = () => {
   return (
@@ -68,6 +69,14 @@ const Shilling = () => {
           <img src={Pixiv} alt="Pixiv.png" />
           <p>
             Pixiv
+          </p>
+          <div></div>
+        </a>
+
+        <a className="ShillCard" href="https://www.etsy.com/shop/DaishuPrints" target="_blank">
+          <img src={Etsy} alt="Etsy.png" />
+          <p>
+            Etsy
           </p>
           <div></div>
         </a>
