@@ -39,6 +39,8 @@ async function init(cnf, callbacks) {
 }
 exports.init = init;
 
+
+const isClip = new RegExp("^(https:\/\/.*twitch\.tv\/.*\/clip\/.*)$");
 async function queueRedeem(message,user,color) {
 
     //Go to text channel
@@ -58,7 +60,8 @@ async function queueRedeem(message,user,color) {
         //Get twitch color
         color = color ? color : "#ff00ff";
 
-        if (url.startsWith("https://clips.twitch.tv/")) {
+        if (url.startsWith("https://clips.twitch.tv/") ||
+            isClip.test(url)) {
             const post = `${user}: ${url}`;
             instances.Twitch.sendToStream(post);
             return;
