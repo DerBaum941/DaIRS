@@ -1,13 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+import Loading from '../reusable/Loading'
+
 const Table = (props) => {
   return (
     <>
+      
       <div className="LeaderboardRow" style={{borderBottom: '1px solid #df164b'}}>
         {props.headers !== undefined && props.headers.map((entry, index) => (<div key={index}>{entry}</div>))}
       </div>
-
+      {props.loading === true && <Loading />}
       {props.data !== null && props.nameLinks === false &&
         props.data.map((entry, index) => (
             <div key={index} className="LeaderboardRow">
@@ -19,7 +22,7 @@ const Table = (props) => {
             </div>
         ))}
 
-      {props.data !== null && props.nameLinks === true &&
+      {props.data.length > 0 && props.nameLinks === true &&
         props.data.map((entry, index) => (
           <div key={index} className="LeaderboardRow">
             <Link to={`/profile/${entry.name}`}>{entry.name}</Link>

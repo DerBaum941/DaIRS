@@ -10,7 +10,8 @@ class Commands extends React.Component {
   state = {
     data: [],
     search: null,
-    connected: true
+    connected: true,
+    loading: true
   }
 
   fetchData = () => {
@@ -22,6 +23,9 @@ class Commands extends React.Component {
     .catch((err) => {
       this.setState({connected: false})
       console.log(err);
+    })
+    .then(() => {
+      this.setState({loading: false})
     })
   }
 
@@ -42,7 +46,7 @@ class Commands extends React.Component {
     return (
       <div className="Commands Leaderboard Main">
         <input placeholder='Search term' type="text" onChange={(e) => this.searchTerm(e.target.value)} />
-        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Description", "Response", "Count"]} nameLinks = {false}/>
+        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Description", "Response", "Count"]} nameLinks = {false} loading = {this.state.loading}/>
       </div>
     )
   }

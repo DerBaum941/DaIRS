@@ -10,7 +10,8 @@ class Redeems extends React.Component {
   state = {
     data: [],
     search: null,
-    connected: true
+    connected: true,
+    loading: true
   }
 
   fetchData = () => {
@@ -21,6 +22,9 @@ class Redeems extends React.Component {
     .catch((err) => {
       this.setState({connected: false})
       console.log(err);
+    })
+    .then(() => {
+      this.setState({loading: false})
     })
   }
 
@@ -41,7 +45,7 @@ class Redeems extends React.Component {
     return (
       <div className="Redeems Leaderboard Main">
         <input placeholder='Search term' type="text" onChange={(e) => this.searchTerm(e.target.value)}/>
-        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Redeems received"]} nameLinks = {true}/>
+        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Redeems received"]} nameLinks = {true} loading = {this.state.loading}/>
       </div>
     )
   }

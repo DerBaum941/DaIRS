@@ -10,7 +10,8 @@ class Messages extends React.Component {
   state = {
     data: [],
     search: null,
-    connected: true
+    connected: true,
+    loading: true
   }
 
   fetchData = () => {
@@ -21,6 +22,9 @@ class Messages extends React.Component {
     .catch((err) => {
       this.setState({connected: false})
       console.log(err);
+    })
+    .then(() => {
+      this.setState({loading: false})
     })
   }
 
@@ -41,7 +45,7 @@ class Messages extends React.Component {
     return (
       <div className="Messages Leaderboard Main">
         <input placeholder='Search term' type="text" onChange={(e) => this.searchTerm(e.target.value)}/>
-        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Messages sent"]} nameLinks = {true}/>
+        <Table data={this.searchData()} connected={this.state.connected} headers={["Name", "Messages sent"]} nameLinks = {true} loading= {this.state.loading}/>
       </div>
     )
   }
