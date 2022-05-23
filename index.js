@@ -20,5 +20,9 @@ main.Init(conf);
  * Track first redeems, with streak count cuz why not :)
  * Add raffle feature, ?raffle start|end|join
  * Add point raffle feature, by name =="raffle" ?pointraffle
+ * 
  * Move link stat event into the request instead of whisper
+ * 
+ * Give Whisper requests a cooldown (in config file)
+ * Fetch banned users (moderation:read) and disallow them from requesting links
  */

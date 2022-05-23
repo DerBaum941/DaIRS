@@ -60,7 +60,7 @@ async function queueRedeem(message,user,color) {
 
         if (url.startsWith("https://clips.twitch.tv/")) {
             const post = `${user}: ${url}`;
-            await instances.Twitch.sendToStream(post);
+            instances.Twitch.sendToStream(post);
             return;
         }
 
