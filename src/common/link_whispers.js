@@ -76,7 +76,7 @@ async function queueRedeem(message,user,color) {
                                 .setStyle('LINK')
                                 .setURL(url));
 
-        channel.send({content: `<@${conf.discord.modRoleID}> - Link Request:`, embeds: [embed], components: [row]});
+        channel.send({content: `<@&${conf.discord.modRoleID}> - Link Request:`, embeds: [embed], components: [row]});
 
     }, ()=>{})
     .catch(()=>{});
