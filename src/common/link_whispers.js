@@ -57,6 +57,13 @@ async function queueRedeem(message,user,color) {
 
         //Get twitch color
         color = color ? color : "#ff00ff";
+
+        if (url.startsWith("https://clips.twitch.tv/")) {
+            const post = `${user}: ${url}`;
+            await instances.Twitch.sendToStream(post);
+            return;
+        }
+
         //Create Embed for link text
         const embed = new MessageEmbed()
                             .setColor()
