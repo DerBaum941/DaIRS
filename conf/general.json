@@ -31,6 +31,7 @@
   "discord": {
       "status": "Being a Bot",
       "linkRequestChannelID": "<ID_FOR_MOD_CHANNEL>",
+      "modRoleID": "<ID_FOR_MOD_ROLE>", 
       "twitterPostsChannelID": "NOT IMPLEMENTED"
   },
   "twitter": {
