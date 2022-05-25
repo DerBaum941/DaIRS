@@ -231,7 +231,7 @@ async function getData(ID) {
 var cacheObjectsID = [];
 var cacheObjectsName = [];
 class CacheObject {
-    static #objectCount = 0;
+    static objectCount = 0;
 
     #ttl = 30; //Time in seconds between periodic invalidation
     #refreshes = 5; //Number of hits before invalidation
@@ -248,7 +248,7 @@ class CacheObject {
 
     constructor(data) {
         this.#Data = data;
-        this.#objectCount++;
+        this.objectCount++;
 
         this.#timer = setTimeout(this.#onInvalidate,this.#ttl*1000);
     }
@@ -267,12 +267,12 @@ class CacheObject {
     }
 
     #onInvalidate() {
-        const currLifetime = this.#objectCount >= this.#count_softlimit ? this.#max_lifetime*60 : this.#min_lifetime;
+        const currLifetime = this.objectCount >= this.#count_softlimit ? this.#max_lifetime*60 : this.#min_lifetime;
 
         if (Date.now()-this.#lastHit >= currLifetime*1000) {
             cacheObjectsID[this.#Data.id] = null;
             cacheObjectsName[this.#Data.name] = null;
-            this.#objectCount--;
+            this.objectCount--;
             return;
         }
 
@@ -292,10 +292,13 @@ const getUserInfoID = async (ID) => {
         return cache.get();
 
     const usr = await getData(ID);
+    c.debug("Cache miss:");
+    c.debug(usr);
     if (!usr) return null;
 
-    cacheObjectsID[ID] = new CacheObject(usr);
-    cacheObjectsName[usr.name] = new CacheObject(usr);
+    const cacheman = new CacheObject(usr);
+    cacheObjectsID[ID] = cacheman;
+    cacheObjectsName[usr.name] = cacheman;
 
     return usr;
 }
@@ -315,8 +318,10 @@ const getUserInfoName = async (name) => {
         return null;
     }
     if (!usr) return null;
-    cacheObjectsName[name] = new CacheObject(usr);
-    cacheObjectsID[usr.id] = new CacheObject(usr);
+
+    const cacheman = new CacheObject(usr);
+    cacheObjectsID[ID] = cacheman;
+    cacheObjectsName[usr.name] = cacheman;
 
     return usr;
 }
