@@ -24,8 +24,8 @@ async function getUser(name) {
     const id = user.id;
 
     //FollowAge
-    const followAge =  await getFollowAge();
-    const isFollow = followAge !== null;
+    const followAge =  await getFollowAge(name);
+    const isFollow = followAge ? true : false;
 
     const streakInfo = await cm.getStreakByName(name);
     const streakCount = streakInfo ? streakInfo.streak : null;
