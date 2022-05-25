@@ -2,7 +2,7 @@ FROM alpine
 ENV NODE_ENV=production
 WORKDIR /home/node/dairs
 
-RUN apk add--update nodejs npm
+RUN apk add --update nodejs npm
 RUN mkdir /home/node/dairs/conf
 RUN mkdir /home/node/dairs/logs
 
