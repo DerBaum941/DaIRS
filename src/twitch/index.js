@@ -243,26 +243,26 @@ async function getData(ID) {
 var cacheObjectsID = [];
 var cacheObjectsName = [];
 class CacheObject {
-    static objectCount = 0;
+    static s_objectCount = 0;
 
-    #ttl = 30; //Time in seconds between periodic invalidation
-    #refreshes = 5; //Number of hits before invalidation
+    __c_ttl = 30; //Time in seconds between periodic invalidation
+    __c_refreshes = 5; //Number of hits before invalidation
 
-    #max_lifetime = 60 //Time in minutes with no requests to clear memory
-    #count_softlimit = 500; //Number of cache instances (roughly)
-    #min_lifetime = 30 //Idle lifetime if Memory is in high demand
+    __c_max_lifetime = 60 //Time in minutes with no requests to clear memory
+    __c_count_softlimit = 500; //Number of cache instances (roughly)
+    __c_min_lifetime = 30 //Idle lifetime if Memory is in high demand
 
-    #Data;
+    m_Data;
 
-    #timer;
-    #lastHit = Date.now();
-    #hits = this.#refreshes;
+    m_timer;
+    m_lastHit = Date.now();
+    m_hits = this.__c_refreshes;
 
     constructor(data) {
-        this.#Data = data;
-        this.objectCount++;
+        this.m_Data = data;
+        this.s_objectCount++;
 
-        this.#timer = setTimeout(this.#onInvalidate,this.#ttl*1000);
+        this.m_timer = setTimeout(this.#onInvalidate,this.__c_ttl*1000);
     }
     get() {
         this.#onRead();
@@ -270,35 +270,35 @@ class CacheObject {
     }
 
     #onRead() {
-        this.#lastHit = Date.now();
-        if (--this.#hits == 0) {
+        this.m_lastHit = Date.now();
+        if (--this.m_hits == 0) {
             this.#onInvalidate();
         } else {
-            this.#timer.refresh();
+            this.m_timer.refresh();
         }
     }
 
     #onInvalidate() {
-        const currLifetime = this.objectCount >= this.#count_softlimit ? this.#max_lifetime*60 : this.#min_lifetime;
+        const currLifetime = this.s_objectCount >= this.__c_count_softlimit ? this.__c_max_lifetime*60 : this.__c_min_lifetime;
 
-        if (Date.now()-this.#lastHit >= currLifetime*1000) {
-            cacheObjectsID[this.#Data.id] = null;
-            cacheObjectsName[this.#Data.name] = null;
-            this.objectCount--;
+        if (Date.now()-this.m_lastHit >= currLifetime*1000) {
+            cacheObjectsID[this.m_Data.id] = null;
+            cacheObjectsName[this.m_Data.name] = null;
+            this.s_objectCount--;
             return;
         }
 
         //Read data in again
-        getData(this.#Data.id)
+        getData(this.m_Data.id)
         .then(data => {
-            this.#Data = data;
-            this.#timer.refresh();
-            this.#hits = this.#refreshes;
+            this.m_Data = data;
+            this.m_timer.refresh();
+            this.m_hits = this.__c_refreshes;
         })
         .catch(()=>{
-            cacheObjectsID[this.#Data.id] = null;
-            cacheObjectsName[this.#Data.name] = null;
-            this.objectCount--;
+            cacheObjectsID[this.m_Data.id] = null;
+            cacheObjectsName[this.m_Data.name] = null;
+            this.s_objectCount--;
         });
     }
 }
@@ -307,16 +307,12 @@ const getUserInfoID = async (ID) => {
     const cache = cacheObjectsID[ID];
 
     if (cache) {
-        c.debug("Cache hit:");
-        c.debug(cache.get());
         return cache.get();
     }
 
     var usr = null;
     try {
         usr = await getData(ID);
-        c.debug("Cache miss:");
-        c.debug(usr);
     } catch {
         return null;
     }
