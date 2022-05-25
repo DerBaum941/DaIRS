@@ -1,12 +1,13 @@
-FROM node:lts-alpine
+FROM alpine
 ENV NODE_ENV=production
 WORKDIR /home/node/dairs
 
+RUN apk add --update nodejs npm
 RUN mkdir /home/node/dairs/conf
 RUN mkdir /home/node/dairs/logs
 
 COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
-RUN npm install --production --silent
+RUN npm ci --production --silent
 COPY . /home/node/dairs
 
 RUN mkdir /home/node/dairs/src/db/backups
