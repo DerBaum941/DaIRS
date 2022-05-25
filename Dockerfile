@@ -11,7 +11,7 @@ RUN npm install --production --silent
 COPY . /home/node/dairs
 
 RUN mkdir /home/node/dairs/src/db/backups
-RUN adduser node
+RUN adduser node -D
 RUN chown -R node /home/node/dairs
 RUN npm install -g vite
 
