@@ -312,8 +312,9 @@ const getUserInfoID = async (ID) => {
         return cache.get();
     }
 
+    var usr = null;
     try {
-        const usr = await getData(ID);
+        usr = await getData(ID);
         c.debug("Cache miss:");
         c.debug(usr);
     } catch {
