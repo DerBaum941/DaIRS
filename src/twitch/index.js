@@ -218,14 +218,26 @@ function newAuthCallback(data) {
 *   Caching requests
 */
 
+
+/*
+        var usr = null;
+        try {
+            usr = apiClient.users.getUserById(ID);
+        } catch {
+            return null;
+        }
+        if (!usr) return null;
+*/
+
 async function getData(ID) {
-    var usr = null;
-    try {
-        usr = await apiClient.users.getUserById(ID);
-    } catch {
-        return null;
-    }
-    if (!usr) return null;
+    return new Promise((res,rej) => {
+        apiClient.users.getUserById(ID)
+        .catch(rej)
+        .then((d)=> {
+            if (!d) res(null);
+            res(d);
+        });
+    });
 }
 
 var cacheObjectsID = [];
@@ -277,10 +289,16 @@ class CacheObject {
         }
 
         //Read data in again
-        getData(this.#Data.id).then(data => {
+        getData(this.#Data.id)
+        .then(data => {
             this.#Data = data;
             this.#timer.refresh();
             this.#hits = this.#refreshes;
+        })
+        .catch(()=>{
+            cacheObjectsID[this.#Data.id] = null;
+            cacheObjectsName[this.#Data.name] = null;
+            this.objectCount--;
         });
     }
 }
@@ -288,12 +306,19 @@ class CacheObject {
 const getUserInfoID = async (ID) => {
     const cache = cacheObjectsID[ID];
 
-    if (cache)
+    if (cache) {
+        c.debug("Cache hit:");
+        c.debug(cache.get());
         return cache.get();
+    }
 
-    const usr = await getData(ID);
-    c.debug("Cache miss:");
-    c.debug(usr);
+    try {
+        const usr = await getData(ID);
+        c.debug("Cache miss:");
+        c.debug(usr);
+    } catch {
+        return null;
+    }
     if (!usr) return null;
 
     const cacheman = new CacheObject(usr);

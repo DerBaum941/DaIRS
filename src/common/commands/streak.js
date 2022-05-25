@@ -155,7 +155,7 @@ async function leaderBoard(numRows) {
         if (row.streakCount == 0) continue;
         const user = await Getters.getUserInfoID(row.userID);
         LB.push({
-            name: user.displayName,
+            name: user.displayName || "N/A",
             streak: row.streakCount,
             achieved: row.achievedAt ? row.achievedAt : "Still active"
         });
