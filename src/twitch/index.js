@@ -342,8 +342,8 @@ const getUserInfoName = async (name) => {
     if (!usr) return null;
 
     const cacheman = new CacheObject(usr);
-    cacheObjectsID[ID] = cacheman;
-    cacheObjectsName[usr.name] = cacheman;
+    cacheObjectsID[usr.id] = cacheman;
+    cacheObjectsName[name] = cacheman;
 
     return usr;
 }
