@@ -31,4 +31,4 @@ jobs:
         context: .
         push: true
         tags: ghcr.io/derbaum941/dairs:v${{github.run_number}}, ghcr.io/derbaum941/dairs:latest
-        labels: ${{ steps.meta.outputs.labels }}
+        labels: version=${{github.run_number}}
