@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import cm from '../../common.mjs';
 import moment from 'moment';
+import { getFollowAge } from '../../../../common/commands/followage.js';
 
 const router = Router();
 
@@ -23,15 +24,8 @@ async function getUser(name) {
     const id = user.id;
 
     //FollowAge
-    const streamer = await cm.getStreamer();
-    const follow = await user.getFollowTo(streamer);
-    var followAge = null;
-    var followMS = null;
-    if (follow) {
-      followAge = moment(follow.followDate.getTime()).fromNow(true);
-      followMS = new Date().getTime() - follow.followDate.getTime();
-    }
-    
+    const followAge =  await getFollowAge();
+    const isFollow = followAge !== null;
 
     const streakInfo = await cm.getStreakByName(name);
     const streakCount = streakInfo ? streakInfo.streak : null;
@@ -53,9 +47,8 @@ async function getUser(name) {
         userID: id,
         name: user.displayName,
         avatar: user.profilePictureUrl,
-        isFollow: follow ? true : false,
+        isFollow,
         followAge,
-        followMS,
         lastSeen,
         streakCount,
         streakActive,

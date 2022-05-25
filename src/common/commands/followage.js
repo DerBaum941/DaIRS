@@ -139,3 +139,14 @@ function formatDuration(period) {
 
     return parts.join(" ");
 }
+exports.getFollowAge = async (name) => {
+    var age = await getFollowAge(name);
+
+    if (!age) {
+        return null;
+    }
+
+    age = formatDuration(age);
+
+    return age;
+}

@@ -12,7 +12,6 @@ Read up on all Types used in responses
         avatar, *URL: Ref to the Profile Picture Image*
         isFollow, *Bool: Whether they follow the streamer*
         followAge, *String?: How long they followed, null if not following*
-        followMS, *Number?: followAge but as time in milliseconds, null if not following*
         lastSeen, *String?: ISO Date String of last time seen*
         streakCount, *Number?: Their current redeem streak*
         streakActive, *String?: When their streak ended, or Still active*
