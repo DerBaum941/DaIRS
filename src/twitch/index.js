@@ -218,52 +218,107 @@ function newAuthCallback(data) {
 *   Caching requests
 */
 
-const cache_ttl = 180 //Time in seconds; 300 = 5 Minutes
-
-var userIDCache = [], userNameCache = [];
-const getUserInfoID = async (ID) => {
-    const cache = userIDCache[ID];
-    if (cache) return cache;
-
-        var usr = null;
-        try {
-            usr = await apiClient.users.getUserById(ID);
-        } catch {
-            return null;
-        }
-        if (!usr) return null;
-        userIDCache[ID] = usr;
-        userNameCache[usr.name] = usr;
-
-        //Delete after end of ttl
-        setTimeout(()=> {
-            delete userNameCache[usr.name];
-            delete userIDCache[ID];
-        },cache_ttl*1000);
-        return usr;
+async function getData(ID) {
+    var usr = null;
+    try {
+        usr = await apiClient.users.getUserById(ID);
+    } catch {
+        return null;
+    }
+    if (!usr) return null;
 }
+
+var cacheObjectsID = [];
+var cacheObjectsName = [];
+class CacheObject {
+    static #objectCount = 0;
+
+    #ttl = 30; //Time in seconds between periodic invalidation
+    #refreshes = 5; //Number of hits before invalidation
+
+    #max_lifetime = 60 //Time in minutes with no requests to clear memory
+    #count_softlimit = 500; //Number of cache instances (roughly)
+    #min_lifetime = 30 //Idle lifetime if Memory is in high demand
+
+    #Data;
+
+    #timer;
+    #lastHit = Date.now();
+    #hits = this.#refreshes;
+
+    constructor(data) {
+        this.#Data = data;
+        this.#objectCount++;
+
+        this.#timer = setTimeout(this.#onInvalidate,this.#ttl*1000);
+    }
+    get() {
+        this.#onRead();
+        return this.#Data;
+    }
+
+    #onRead() {
+        this.#lastHit = Date.now();
+        if (--this.#hits == 0) {
+            this.#onInvalidate();
+        } else {
+            this.#timer.refresh();
+        }
+    }
+
+    #onInvalidate() {
+        const currLifetime = this.#objectCount >= this.#count_softlimit ? this.#max_lifetime*60 : this.#min_lifetime;
+
+        if (Date.now()-this.#lastHit >= currLifetime*1000) {
+            cacheObjectsID[this.#Data.id] = null;
+            cacheObjectsName[this.#Data.name] = null;
+            this.#objectCount--;
+            return;
+        }
+
+        //Read data in again
+        getData(this.#Data.id).then(data => {
+            this.#Data = data;
+            this.#timer.refresh();
+            this.#hits = this.#refreshes;
+        });
+    }
+}
+
+const getUserInfoID = async (ID) => {
+    const cache = cacheObjectsID[ID];
+
+    if (cache)
+        return cache.get();
+
+    const usr = await getData(ID);
+    if (!usr) return null;
+
+    cacheObjectsID[ID] = new CacheObject(usr);
+    cacheObjectsName[usr.name] = new CacheObject(usr);
+
+    return usr;
+}
+
 const getUserInfoName = async (name) => {
     if (!name) return null;
     name = name.toLowerCase();
-    const cache = userNameCache[name];
-    if (cache) return cache;
 
-        var usr = null;
-        try {
-            usr = await apiClient.users.getUserByName(name);
-        } catch {
-            return null;
-        }
-        if (!usr) return null;
-        userNameCache[name] = usr;
-        userIDCache[usr.id] = usr;
+    const cache = cacheObjectsName[name];
+    if (cache) 
+        return cache.get();
 
-        //Delete after end of ttl
-        setTimeout(()=> {
-            delete userNameCache[name];
-            delete userIDCache[usr.id];
-        },cache_ttl*1000);
-        return usr;
+    var usr = null;
+    try {
+        usr = await apiClient.users.getUserByName(name);
+    } catch {
+        return null;
+    }
+    if (!usr) return null;
+    cacheObjectsName[name] = new CacheObject(usr);
+    cacheObjectsID[usr.id] = new CacheObject(usr);
+
+    return usr;
 }
 const getStreamer = async () => {
     const usr = await getUserInfoName(channel);
