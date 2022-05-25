@@ -4,7 +4,7 @@ const cnf = require('../../conf/general.json');
 const fs = require('fs');
 const path = require('path');
 const { hrtime } = require('process');
-const TwitchGetters = require('../../twitch/index.js').Getters;
+const TwitchGetters = require('../twitch/index.js').Getters;
 
 //Todo
 //Prune discord commands that arent used
