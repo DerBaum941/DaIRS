@@ -17,9 +17,20 @@ main.Init(conf);
  * Build the twitter Integration fully ->Optional
  * 
  * Add new endpoint for aggregate redeem_records by uid
- * Track first redeems, with streak count cuz why not :)
  * Add raffle feature, ?raffle start|end|join
  * Add point raffle feature, by name =="raffle" ?pointraffle
+ * 
+ * Fix DM Commands crashing it
+ * 
+ * Timeout on twitch crashes it
+ * 
+ * Cache twitch usernames better
+ * 
+ * Set Page size to 20
+ * 
+ * Add aliases the command list website thing
+ * 
+ * Track first redeems, with streak count cuz why not :)
  * 
  * Move link stat event into the request instead of whisper
  * 

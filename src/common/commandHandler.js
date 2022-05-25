@@ -4,6 +4,7 @@ const cnf = require('../../conf/general.json');
 const fs = require('fs');
 const path = require('path');
 const { hrtime } = require('process');
+const TwitchGetters = require('../../twitch/index.js').Getters;
 
 //Todo
 //Prune discord commands that arent used
@@ -216,7 +217,7 @@ class CommandHandler {
         const cmd = this.#commands[commandID];
 
         //modCheck in channels
-        if (channel && cmd.data.modOnly && (!(messageObject.userInfo.isMod || messageObject.userInfo.isBroadcaster) && !Clients.twitch.chat.isMod(user))) return;
+        if (channel && cmd.data.modOnly && (!(messageObject.userInfo.isMod || messageObject.userInfo.isBroadcaster || Clients.twitch.chat.isMod(user) ))) return;
         //Has to be on the list for whispers
         if (!channel && cmd.data.modOnly && !Clients.twitch.chat.isMod(user)) return;
 
@@ -287,10 +288,12 @@ class CommandHandler {
         }
 
         try { //Twitch command
+            const info = await TwitchGetters.getStreamer();
+            const irc_chan = channel ? channel : info.name;
             if (hasChoices) {
-                await cmd.twitchCallback(Emitter, Clients, channel, user, groups.choice, groups.parsedArgs, messageObject);
+                await cmd.twitchCallback(Emitter, Clients, irc_chan, user, groups.choice, groups.parsedArgs, messageObject);
             } else {
-                await cmd.twitchCallback(Emitter, Clients, channel, user, groups.choice, groups.args, messageObject);
+                await cmd.twitchCallback(Emitter, Clients, irc_chan, user, groups.choice, groups.args, messageObject);
             }
         } catch (e) {
             if (e != "rejected") {
