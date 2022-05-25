@@ -17,6 +17,7 @@ const data = {
     }]
 }
 exports.data = data;
+const { Getters } = require('../../twitch/index.js');
 
 /**
  * Discord slash command specific callback values
@@ -67,7 +68,7 @@ exports.data = data;
                 .addField("Streak achieved", streakText, true)
                 .addField("Ended on", dateText, true);
 
-        const info = await getStreamer()
+        const info = await Getters.getStreamer();
         embed.setAuthor({name: info.displayName, iconURL: info.profilePictureUrl, url:'https://twitch.tv/'+info.name});
 
         interaction.reply({embeds: [embed]});
@@ -128,7 +129,6 @@ exports.twitchCallback = async (Emitter, Clients, ch, chatPerson, choice, args, 
 }
 
 
-const { Getters } = require('../../twitch/index.js');
 
 
 const getStats = db.prepare("SELECT streakCount, streakActive FROM twitch_redeem_streak WHERE userID = ?");
