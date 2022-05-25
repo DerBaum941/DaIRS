@@ -262,7 +262,7 @@ class CacheObject {
         this.m_Data = data;
         this.s_objectCount++;
 
-        this.m_timer = setTimeout(this.#onInvalidate,this.__c_ttl*1000);
+        this.m_timer = setTimeout(()=>{this.#onInvalidate();},this.__c_ttl*1000);
     }
     get() {
         this.#onRead();
