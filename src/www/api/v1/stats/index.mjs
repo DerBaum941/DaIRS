@@ -2,7 +2,7 @@ import { Router } from 'express';
 import cm from '../../common.mjs';
 const router = Router();
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 25;
 
 //Most messages sent info
 const getTopMessages = cm.db.prepare("SELECT userID, numMessages AS value FROM stats_messages_sent ORDER BY value DESC LIMIT ? OFFSET ?");
