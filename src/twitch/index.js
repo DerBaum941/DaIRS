@@ -266,7 +266,7 @@ class CacheObject {
     }
     get() {
         this.#onRead();
-        return this.#Data;
+        return this.Data;
     }
 
     #onRead() {
