@@ -80,7 +80,7 @@ async function evaderLB(page) {
       return lb;
     for(let i = 0; i < result.length; i++) {
       let row = result[i];
-      const usr = await cm.getUserInfoID(row.userID);
+      const user = await cm.getUserInfoID(row.userID);
       lb.push({
         name: user ? user.displayName : "N/A",
         value: row.value,
