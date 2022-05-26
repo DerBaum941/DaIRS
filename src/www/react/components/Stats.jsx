@@ -2,12 +2,9 @@ import React from "react";
 import { Routes, Route, NavLink, Navigate } from "react-router-dom";
 
 import '../styles/Stats.scss';
-import Commands from './stats/Commands';
-import Evaders from './stats/Evaders';
-import Redeems from './stats/Redeems';
+
 import StatsHome from './stats/StatsHome';
-import Taxes from './stats/Taxes';
-import Messages from './stats/Messages';
+import StatsPage from "./stats/StatsPage";
 
 const Stats = () => {
   return ( 
@@ -26,11 +23,11 @@ const Stats = () => {
         <div className="StatsBody">
           <Routes> 
             <Route index element = {<StatsHome /> } />
-            <Route path="/commands" element = {<Commands />} />
-            <Route path="/taxes" element = {<Taxes />} />
-            <Route path="/evaders" element = {<Evaders />} />
-            <Route path="/redeems" element = {<Redeems />} />
-            <Route path="/messages" element = {<Messages />} />
+            <Route path="/commands" element = {<StatsPage key={1} columns={4} endpoint={'commands'}/>} />
+            <Route path="/taxes" element = {<StatsPage key={2} columns={3} endpoint={'streak'}/>} />
+            <Route path="/evaders" element = {<StatsPage key={3} columns={3} endpoint={'evaders'} />} />
+            <Route path="/redeems" element = {<StatsPage key={4} columns={2} endpoint={'redeems'} /> } />
+            <Route path="/messages" element = {<StatsPage key={5} columns={2} endpoint={'message'} />} />
             <Route path="/*" element = {<Navigate to ="/stats" />} />
           </Routes>
         </div>
