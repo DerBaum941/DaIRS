@@ -82,7 +82,7 @@ async function evaderLB(page) {
       let row = result[i];
       const usr = await cm.getUserInfoID(row.userID);
       lb.push({
-        name: usr.displayName || "N/A",
+        name: user ? user.displayName : "N/A",
         value: row.value,
         active: row.date
       });

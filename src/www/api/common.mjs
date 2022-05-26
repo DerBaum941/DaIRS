@@ -18,7 +18,7 @@ async function parseResult(result, numRows) {
         let row = result[i];
         const user = await getUserInfoID(row.userID);
         lb.push({
-            name: user.displayName || "N/A",
+            name: user ? user.displayName : "N/A",
             value: row.value
         });
     }
@@ -68,7 +68,7 @@ async function leaderBoard(page, page_size) {
         let row = table[i];
         const user = await Getters.getUserInfoID(row.userID);
         LB.push({
-            name: user.displayName || "N/A",
+            name: user ? user.displayName : "N/A",
             streak: row.streakCount,
             achieved: row.achievedAt ? row.achievedAt : "Still active"
         });
