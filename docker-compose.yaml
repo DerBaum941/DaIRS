@@ -11,8 +11,8 @@ services:
     image: ghcr.io/derbaum941/dairs:latest
     volumes:
       - database:/home/node/dairs/src/db
-      - ./general.json:/home/node/dairs/conf/general.json
-      - ./credentials.json:/home/node/dairs/conf/credentials.json
+      - /root/dairs/general.json:/home/node/dairs/conf/general.json
+      - /root/dairs/credentials.json:/home/node/dairs/conf/credentials.json
     ports:
       - 9090:9090
   backup:
