@@ -63,17 +63,17 @@ class StatsPage extends React.Component {
   renderSwitch = (endpoint) => {
     switch (endpoint) {
       case 'commands':
-        return ["Name", "Description", "Response", "Count"]
+        return { headers: ["Name", "Description", "Response", "Count"], nameLinks: false }
       case 'streak':
-        return ["Name", "Streak", "Last active"];
+        return { headers: ["Name", "Streak", "Last active"], nameLinks: true }
       case 'evaders':
-        return ["Name", "Last Streak", "Evading since"]
+        return { headers: ["Name", "Last Streak", "Evading since"], nameLinks: true } 
       case 'redeems':
-        return ["Name", "Redeems received"]
+        return { headers: ["Name", "Redeems received"], nameLinks: true }
       case 'message':
-        return ["Name", "Messages sent"]
+        return { headers: ["Name", "Messages sent"], nameLinks: true }
       default:
-        return null
+        return { headers: [], nameLinks: false }
     }
   }
 
@@ -81,7 +81,7 @@ class StatsPage extends React.Component {
     return (
       <div className="Taxes Leaderboard Main">
         <input placeholder='Search term' type="text" onChange={(e) => this.searchTerm(e.target.value)}/>
-        <Table data={this.searchData()} connected={this.state.connected} headers={this.renderSwitch(this.props.endpoint)} loading = {this.state.loading} columns={this.props.columns}/>
+        <Table data={this.searchData()} connected={this.state.connected} headers={this.renderSwitch(this.props.endpoint).headers} nameLinks={this.renderSwitch(this.props.endpoint).nameLinks} loading = {this.state.loading} columns={this.props.columns}/>
         {this.state.loading === false && this.state.page !== 0 && <button className="LoadMore" onClick={this.loadMore}>Load more</button>}
         {this.state.page === 0 && <p>No more pages available.</p>}
       </div>
