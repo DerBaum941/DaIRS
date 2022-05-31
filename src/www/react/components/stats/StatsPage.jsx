@@ -65,7 +65,7 @@ class StatsPage extends React.Component {
       case 'commands':
         return ["Name", "Description", "Response", "Count"]
       case 'streak':
-        return ["Name", "Streak", "Tax Streak"];
+        return ["Name", "Streak", "Last active"];
       case 'evaders':
         return ["Name", "Last Streak", "Evading since"]
       case 'redeems':
