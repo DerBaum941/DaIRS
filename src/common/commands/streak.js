@@ -129,8 +129,6 @@ exports.twitchCallback = async (Emitter, Clients, ch, chatPerson, choice, args, 
 }
 
 
-
-
 const getStats = db.prepare("SELECT streakCount, streakActive FROM twitch_redeem_streak WHERE userID = ?");
 async function getStreakByName(name) {
     const usr = await Getters.getUserInfoName(name);
@@ -142,12 +140,9 @@ async function getStreakByName(name) {
     return {name: usr.displayName, streak: row.streakCount, active: row.streakActive == 1};
 }
 
-const getBest = db.prepare("SELECT userID, streakCount, achievedAt FROM twitch_redeem_records ORDER BY streakCount DESC LIMIT ?");
 const getTop = db.prepare("SELECT userID, streakCount FROM twitch_redeem_streak ORDER BY streakCount DESC LIMIT ?");
 async function leaderBoard(numRows) {
-    var result1 = getTop.all(numRows);
-    var result2 = getBest.all(numRows);
-    const table = [...result1, ...result2];
+    const table = getTop.all(numRows);
     if (table.length==0) return null;
     var LB = [];
     for(let i = 0; i < table.length; i++) {
