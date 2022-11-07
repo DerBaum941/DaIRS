@@ -55,7 +55,7 @@ class UserCard extends React.Component {
 
             this.props.data.totalRedeems !== null &&
             <p key={4}>
-              Spent on Taxes: {this.props.data.totalRedeems * 3} points
+              Spent on Taxes: {this.props.data.totalRedeems * 100} points
             </p>,
 
             this.props.data.streakCount !== null &&
