@@ -3,6 +3,9 @@ var db;
 var sendMessage = true;
 const c = require('./logman.js');
 
+var lastStreamStart = null;
+const hoursBetweenStreams = 12;
+
 async function init(conf, callbacks) {
     instances = callbacks;
     db = instances.DB.database;
@@ -36,7 +39,11 @@ async function init(conf, callbacks) {
         if (Message.rewardId == conf.stream_start_redeem) {
             onStreamEnd();
             c.inf(`${Message.userDisplayName} has redeemed first!`);
-            setTimeout(onStreamStart,1000);
+            
+            var pastTime = new Date(new Date().getTime() - (hoursBetweenStreams * 60 * 60 * 1000));
+            if (lastStreamStart == null || lastStreamStart <= pastTime)
+                setTimeout(onStreamStart,500);
+            lastStreamStart = new Date();
             return;
         }
     });
