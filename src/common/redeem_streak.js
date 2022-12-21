@@ -37,12 +37,14 @@ async function init(conf, callbacks) {
         }
         //This is a Workaround because fuck eventsubs
         if (Message.rewardId == conf.stream_start_redeem) {
-            onStreamEnd();
             c.inf(`${Message.userDisplayName} has redeemed first!`);
             
             var pastTime = new Date(new Date().getTime() - (hoursBetweenStreams * 60 * 60 * 1000));
             if (lastStreamStart == null || lastStreamStart <= pastTime)
-                setTimeout(onStreamStart,500);
+            {
+                onStreamEnd();
+                setTimeout(onStreamStart, 500);
+            }
             lastStreamStart = new Date();
             return;
         }
