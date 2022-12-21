@@ -71,6 +71,7 @@ exports.twitchCallback = async (Emitter, Clients, ch, user, choice, args, msgObj
     switch (choice) {
         case restore:
             restoreStreaks();
+            Clients.twitch.chat.say(ch, "Successfully restored all streak counts from last stream!", { replyTo: msgObj });
             break;
         case set:
             if (!args)
